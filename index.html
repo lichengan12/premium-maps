@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Maps — Premium (Google)</title>
+  <title>Maps — Premium</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -42,7 +42,137 @@
       height: 100%;
     }
 
-    /* Sidebar */
+    /* ── Welcome / Login Overlay ───────────────── */
+    #welcome {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: radial-gradient(ellipse at 30% 20%, #1a2a4a 0%, var(--bg) 60%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      transition: opacity 0.4s, visibility 0.4s;
+    }
+
+    #welcome.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .welcome-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .welcome-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #1a73e8, #8ab4f8);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 28px;
+      color: white;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 24px rgba(26,115,232,0.45);
+    }
+
+    .welcome-card h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .welcome-card p {
+      color: var(--muted);
+      font-size: 14.5px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    .welcome-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      background: var(--accent-strong);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-primary:hover { background: #1557b0; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-google {
+      background: white;
+      color: #3c4043;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .btn-google:hover { background: #f8f9fa; }
+    .btn-google:active { transform: scale(0.98); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .welcome-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+
+    /* ── Sidebar ───────────────────────────────── */
     .sidebar {
       background: var(--panel);
       border-right: 1px solid var(--border);
@@ -93,9 +223,60 @@
       border-radius: 999px;
     }
 
-    .search-box {
-      position: relative;
+    /* User chip */
+    .user-chip {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s;
     }
+
+    .user-chip.visible { display: flex; }
+    .user-chip:hover { border-color: var(--accent); }
+
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--accent-strong);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: white;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-meta { flex: 1; min-width: 0; text-align: left; }
+    .user-meta .name {
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .user-meta .email {
+      font-size: 11.5px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .search-box { position: relative; }
 
     .search-box input {
       width: 100%;
@@ -263,6 +444,10 @@
       color: white;
     }
 
+    .marker-pin.me {
+      background: linear-gradient(135deg, #34a853, #81c995);
+    }
+
     .marker-info { flex: 1; min-width: 0; }
 
     .marker-info .title {
@@ -307,7 +492,7 @@
       opacity: 0.4;
     }
 
-    /* Map area */
+    /* Map */
     .map-wrap {
       position: relative;
       height: 100%;
@@ -346,7 +531,6 @@
     .ctrl-btn:hover { background: var(--panel-2); }
     .ctrl-btn:active { transform: scale(0.96); }
     .ctrl-btn.active { background: var(--accent-strong); border-color: var(--accent-strong); color: white; }
-
     .ctrl-btn svg { width: 20px; height: 20px; }
 
     .layers-panel {
@@ -438,7 +622,6 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* Hide default Google UI we don't need */
     .gm-style .gm-style-cc,
     .gm-bundled-control .gmnoprint { display: none !important; }
 
@@ -477,6 +660,39 @@
   </style>
 </head>
 <body>
+  <!-- Welcome / Login Overlay -->
+  <div id="welcome">
+    <div class="welcome-card">
+      <div class="welcome-logo">G</div>
+      <h1>Welcome to Maps</h1>
+      <p>Sign in and allow location access for the best experience — your places and position will be ready instantly.</p>
+
+      <div class="welcome-actions">
+        <button class="btn-google" id="btnGoogleLogin">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <button class="btn-primary" id="btnAllowLocation">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+            <circle cx="12" cy="12" r="8"/>
+          </svg>
+          Allow Location & Enter
+        </button>
+
+        <button class="btn-ghost" id="btnSkip">Continue without location</button>
+      </div>
+
+      <p class="welcome-note">Your location is only used on this device to center the map. Nothing is uploaded.</p>
+    </div>
+  </div>
+
   <div id="app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
@@ -485,6 +701,16 @@
           <h1>Maps</h1>
           <span>Google</span>
         </div>
+
+        <!-- User profile (shown when logged in) -->
+        <div class="user-chip" id="userChip">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <div class="user-meta">
+            <div class="name" id="userName">Guest</div>
+            <div class="email" id="userEmail">Not signed in</div>
+          </div>
+        </div>
+
         <div class="search-box">
           <input
             type="text"
@@ -601,19 +827,31 @@
     </div>
   </div>
 
-  <!-- Official Google Maps JavaScript API with your key -->
+  <!-- Google Identity Services (Sign-In) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Google Maps JS API -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQXAhnouB23QWGRAchHsdg9XcVDn-fdUg&libraries=places&callback=initMap" async defer></script>
 
   <script>
     // ─────────────────────────────────────────────
-    //  PREMIUM GOOGLE MAPS ENGINE
-    //  Using official Google Maps JavaScript API
+    //  PREMIUM GOOGLE MAPS + AUTH + LOCATION
     // ─────────────────────────────────────────────
+
+    // ⚠️  Put your OAuth 2.0 Client ID here for Google Sign-In
+    // Create one at: https://console.cloud.google.com/apis/credentials
+    // Type: OAuth client ID → Web application
+    // Authorized JavaScript origins: your domain (or http://localhost)
+    const GOOGLE_CLIENT_ID = ""; // e.g. "123456789-abc.apps.googleusercontent.com"
 
     let map, markers = [], dropMode = false, markerId = 0;
     let placesService, autocompleteService;
+    let myLocationMarker = null;
+    let accuracyCircle = null;
+    let currentUser = null;
 
     const $ = (sel) => document.querySelector(sel);
+    const welcome      = $("#welcome");
     const searchInput   = $("#searchInput");
     const searchResults = $("#searchResults");
     const markersList   = $("#markersList");
@@ -622,8 +860,198 @@
     const toastEl       = $("#toast");
     const layersPanel   = $("#layersPanel");
     const sidebar       = $("#sidebar");
+    const userChip      = $("#userChip");
 
-    // ── Init (called by Google Maps callback) ─────
+    // ── Welcome screen actions ────────────────────
+    $("#btnAllowLocation").addEventListener("click", () => {
+      closeWelcome();
+      requestLocation(true);
+    });
+
+    $("#btnSkip").addEventListener("click", () => {
+      closeWelcome();
+      toast("You can enable location anytime with My Location");
+    });
+
+    $("#btnGoogleLogin").addEventListener("click", () => {
+      if (!GOOGLE_CLIENT_ID) {
+        // Fallback: simple guest profile so the UI still feels complete
+        setUser({
+          name: "Guest User",
+          email: "guest@maps.local",
+          picture: null,
+          sub: "guest"
+        });
+        toast("Google Sign-In needs a Client ID — using guest mode");
+        closeWelcome();
+        requestLocation(true);
+        return;
+      }
+      // Trigger GIS One Tap / popup
+      if (window.google?.accounts?.id) {
+        google.accounts.id.prompt();
+      } else {
+        toast("Google Sign-In still loading… try again");
+      }
+    });
+
+    function closeWelcome() {
+      welcome.classList.add("hidden");
+    }
+
+    // ── Google Identity Services ──────────────────
+    function initGoogleSignIn() {
+      if (!GOOGLE_CLIENT_ID || !window.google?.accounts?.id) return;
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      // Optional: render a button if needed later
+      // google.accounts.id.renderButton(...)
+    }
+
+    function handleCredentialResponse(response) {
+      try {
+        // Decode JWT payload (base64)
+        const payload = JSON.parse(atob(response.credential.split(".")[1]));
+        setUser({
+          name: payload.name,
+          email: payload.email,
+          picture: payload.picture,
+          sub: payload.sub
+        });
+        closeWelcome();
+        requestLocation(true);
+        toast(`Welcome, ${payload.given_name || payload.name}!`);
+      } catch (err) {
+        console.error(err);
+        toast("Sign-in failed");
+      }
+    }
+
+    function setUser(user) {
+      currentUser = user;
+      localStorage.setItem("maps_user", JSON.stringify(user));
+
+      userChip.classList.add("visible");
+      $("#userName").textContent = user.name;
+      $("#userEmail").textContent = user.email;
+
+      const avatar = $("#userAvatar");
+      if (user.picture) {
+        avatar.innerHTML = `<img src="${user.picture}" alt="" referrerpolicy="no-referrer" />`;
+      } else {
+        avatar.textContent = (user.name || "?").charAt(0).toUpperCase();
+      }
+    }
+
+    function loadUser() {
+      try {
+        const raw = localStorage.getItem("maps_user");
+        if (raw) setUser(JSON.parse(raw));
+      } catch {}
+    }
+
+    // ── Location ──────────────────────────────────
+    function requestLocation(centerMap = false) {
+      if (!navigator.geolocation) {
+        toast("Geolocation not supported by this browser");
+        return;
+      }
+
+      toast("Getting your location…");
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude, accuracy } = pos.coords;
+          showMyLocation(latitude, longitude, accuracy, centerMap);
+          toast("Location found");
+        },
+        (err) => {
+          console.warn(err);
+          if (err.code === 1) toast("Location permission denied");
+          else if (err.code === 2) toast("Location unavailable");
+          else toast("Could not get location");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 30000
+        }
+      );
+    }
+
+    function showMyLocation(lat, lng, accuracy = 50, center = true) {
+      // Remove previous
+      if (myLocationMarker) myLocationMarker.setMap(null);
+      if (accuracyCircle) accuracyCircle.setMap(null);
+
+      // Blue pulsing-style marker
+      myLocationMarker = new google.maps.Marker({
+        position: { lat, lng },
+        map,
+        title: "You are here",
+        zIndex: 999,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 10,
+          fillColor: "#4285F4",
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 3
+        }
+      });
+
+      accuracyCircle = new google.maps.Circle({
+        map,
+        center: { lat, lng },
+        radius: Math.min(accuracy, 300),
+        fillColor: "#4285F4",
+        fillOpacity: 0.12,
+        strokeColor: "#4285F4",
+        strokeOpacity: 0.35,
+        strokeWeight: 1
+      });
+
+      // Also add as a saved place (special)
+      const existing = markers.find(m => m.isMe);
+      if (existing) {
+        existing.marker.setMap(null);
+        markers = markers.filter(m => !m.isMe);
+      }
+
+      markerId += 1;
+      const id = markerId;
+      const info = new google.maps.InfoWindow({
+        content: `<div style="font-family:Inter,sans-serif;padding:4px 2px">
+          <strong style="font-size:14px">You are here</strong><br>
+          <span style="color:#5f6368;font-size:12px">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
+        </div>`
+      });
+
+      myLocationMarker.addListener("click", () => info.open(map, myLocationMarker));
+
+      markers.unshift({
+        id, lat, lng,
+        title: "You are here",
+        marker: myLocationMarker,
+        info,
+        isMe: true
+      });
+
+      renderMarkersList();
+
+      if (center) {
+        map.panTo({ lat, lng });
+        if (map.getZoom() < 15) map.setZoom(16);
+      }
+    }
+
+    // ── Map init (Google callback) ────────────────
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 37.7749, lng: -122.4194 },
@@ -634,14 +1062,12 @@
         zoomControlOptions: {
           position: google.maps.ControlPosition.RIGHT_BOTTOM
         },
-        gestureHandling: "greedy",
-        styles: [] // keep clean Google look
+        gestureHandling: "greedy"
       });
 
       placesService = new google.maps.places.PlacesService(map);
       autocompleteService = new google.maps.places.AutocompleteService();
 
-      // Live coordinates
       map.addListener("mousemove", (e) => {
         if (e.latLng) {
           statusCoords.textContent = `${e.latLng.lat().toFixed(5)}, ${e.latLng.lng().toFixed(5)}`;
@@ -651,7 +1077,6 @@
       map.addListener("zoom_changed", updateStatus);
       map.addListener("center_changed", updateStatus);
 
-      // Drop pin on click when mode active
       map.addListener("click", (e) => {
         if (dropMode && e.latLng) {
           addMarker(e.latLng.lat(), e.latLng.lng(), "Dropped Pin");
@@ -661,18 +1086,25 @@
         }
       });
 
-      // Double-click quick pin
       map.addListener("dblclick", (e) => {
         if (e.latLng) addMarker(e.latLng.lat(), e.latLng.lng(), "Quick Pin");
       });
 
       updateStatus();
+      loadUser();
+      loadSavedMarkers();
 
-      // Welcome pin
-      setTimeout(() => {
-        addMarker(37.7749, -122.4194, "San Francisco", false);
-        toast("Google Maps ready — Satellite mode");
-      }, 500);
+      // Init Google Sign-In after maps is ready
+      setTimeout(initGoogleSignIn, 400);
+
+      // If user already dismissed welcome in past session, still offer location once
+      if (localStorage.getItem("maps_welcome_done") === "1") {
+        closeWelcome();
+        // Soft prompt for location if we don't have one yet
+        if (!myLocationMarker) {
+          setTimeout(() => requestLocation(true), 600);
+        }
+      }
     }
 
     function updateStatus() {
@@ -709,7 +1141,6 @@
       });
 
       marker.addListener("click", () => info.open(map, marker));
-
       marker.addListener("dragend", () => {
         const pos = marker.getPosition();
         const m = markers.find(m => m.id === id);
@@ -717,11 +1148,13 @@
           m.lat = pos.lat();
           m.lng = pos.lng();
           renderMarkersList();
+          persistMarkers();
         }
       });
 
-      markers.push({ id, lat, lng, title, marker, info });
+      markers.push({ id, lat, lng, title, marker, info, isMe: false });
       renderMarkersList();
+      persistMarkers();
 
       if (fly) {
         map.panTo({ lat, lng });
@@ -734,14 +1167,22 @@
       const idx = markers.findIndex(m => m.id === id);
       if (idx === -1) return;
       markers[idx].marker.setMap(null);
+      if (markers[idx].isMe) {
+        myLocationMarker = null;
+        if (accuracyCircle) { accuracyCircle.setMap(null); accuracyCircle = null; }
+      }
       markers.splice(idx, 1);
       renderMarkersList();
+      persistMarkers();
     }
 
     function clearAllMarkers() {
       markers.forEach(m => m.marker.setMap(null));
       markers = [];
+      myLocationMarker = null;
+      if (accuracyCircle) { accuracyCircle.setMap(null); accuracyCircle = null; }
       renderMarkersList();
+      persistMarkers();
       toast("All places cleared");
     }
 
@@ -761,7 +1202,7 @@
 
       markersList.innerHTML = markers.map(m => `
         <div class="marker-card" data-id="${m.id}">
-          <div class="marker-pin">${m.id}</div>
+          <div class="marker-pin ${m.isMe ? "me" : ""}">${m.isMe ? "●" : m.id}</div>
           <div class="marker-info">
             <div class="title">${escapeHtml(m.title)}</div>
             <div class="coords">${m.lat.toFixed(5)}, ${m.lng.toFixed(5)}</div>
@@ -793,6 +1234,58 @@
           removeMarker(+btn.dataset.remove);
         });
       });
+    }
+
+    function persistMarkers() {
+      const data = markers
+        .filter(m => !m.isMe)
+        .map(m => ({ id: m.id, lat: m.lat, lng: m.lng, title: m.title }));
+      localStorage.setItem("maps_markers", JSON.stringify(data));
+      localStorage.setItem("maps_marker_id", String(markerId));
+    }
+
+    function loadSavedMarkers() {
+      try {
+        const raw = localStorage.getItem("maps_markers");
+        const savedId = localStorage.getItem("maps_marker_id");
+        if (savedId) markerId = parseInt(savedId, 10) || 0;
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        data.forEach(m => {
+          // re-add without animation spam
+          const marker = new google.maps.Marker({
+            position: { lat: m.lat, lng: m.lng },
+            map,
+            title: m.title,
+            label: {
+              text: String(m.id),
+              color: "white",
+              fontWeight: "700",
+              fontSize: "12px"
+            },
+            draggable: true
+          });
+          const info = new google.maps.InfoWindow({
+            content: `<div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:140px">
+              <strong style="font-size:14px">${escapeHtml(m.title)}</strong><br>
+              <span style="color:#5f6368;font-size:12px">${m.lat.toFixed(5)}, ${m.lng.toFixed(5)}</span>
+            </div>`
+          });
+          marker.addListener("click", () => info.open(map, marker));
+          marker.addListener("dragend", () => {
+            const pos = marker.getPosition();
+            const found = markers.find(x => x.id === m.id);
+            if (found) {
+              found.lat = pos.lat();
+              found.lng = pos.lng();
+              renderMarkersList();
+              persistMarkers();
+            }
+          });
+          markers.push({ id: m.id, lat: m.lat, lng: m.lng, title: m.title, marker, info, isMe: false });
+        });
+        renderMarkersList();
+      } catch {}
     }
 
     // ── Google Places Search ──────────────────────
@@ -845,29 +1338,12 @@
       );
     }
 
-    // ── Geolocation ───────────────────────────────
-    function locateMe() {
-      if (!navigator.geolocation) {
-        toast("Geolocation not supported");
-        return;
-      }
-      toast("Locating…");
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          addMarker(latitude, longitude, "My Location");
-          toast("Location found");
-        },
-        () => toast("Unable to get location")
-      );
-    }
-
     // ── Utils ─────────────────────────────────────
     function toast(msg) {
       toastEl.textContent = msg;
       toastEl.classList.add("show");
       clearTimeout(toastEl._timer);
-      toastEl._timer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+      toastEl._timer = setTimeout(() => toastEl.classList.remove("show"), 2400);
     }
 
     function escapeHtml(str) {
@@ -907,17 +1383,13 @@
       if (e.key === "Escape") searchResults.classList.remove("open");
     });
 
-    $("#searchBtn").addEventListener("click", () => {
-      searchPlaces(searchInput.value.trim());
-    });
+    $("#searchBtn").addEventListener("click", () => searchPlaces(searchInput.value.trim()));
 
     document.addEventListener("click", (e) => {
-      if (!e.target.closest(".search-box")) {
-        searchResults.classList.remove("open");
-      }
+      if (!e.target.closest(".search-box")) searchResults.classList.remove("open");
     });
 
-    $("#btnLocate").addEventListener("click", locateMe);
+    $("#btnLocate").addEventListener("click", () => requestLocation(true));
 
     $("#btnDropPin").addEventListener("click", () => {
       dropMode = !dropMode;
@@ -948,19 +1420,21 @@
 
     $("#btnFullscreen").addEventListener("click", () => {
       const el = document.documentElement;
-      if (!document.fullscreenElement) {
-        el.requestFullscreen?.();
-      } else {
-        document.exitFullscreen?.();
-      }
+      if (!document.fullscreenElement) el.requestFullscreen?.();
+      else document.exitFullscreen?.();
     });
 
-    $("#mobileToggle").addEventListener("click", () => {
-      sidebar.classList.toggle("open");
-    });
+    $("#mobileToggle").addEventListener("click", () => sidebar.classList.toggle("open"));
 
     document.getElementById("map").addEventListener("click", () => {
       if (window.innerWidth <= 800) sidebar.classList.remove("open");
+    });
+
+    // Mark welcome as done when user proceeds
+    ["btnAllowLocation", "btnSkip", "btnGoogleLogin"].forEach(id => {
+      document.getElementById(id).addEventListener("click", () => {
+        localStorage.setItem("maps_welcome_done", "1");
+      });
     });
   </script>
 </body>
