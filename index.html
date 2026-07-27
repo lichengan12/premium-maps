@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Maps — Premium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #181b22;
+      --panel-2: #1f2430;
+      --border: #2a303c;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #8ab4f8;
+      --accent-strong: #1a73e8;
+      --success: #81c995;
+      --danger: #f28b82;
+      --shadow: 0 8px 32px rgba(0,0,0,0.45);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --font: "Inter", system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #app {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      height: 100%;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      position: relative;
+    }
+
+    .sidebar-header {
+      padding: 20px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #1a73e8, #8ab4f8);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(26,115,232,0.4);
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: auto;
+      background: var(--panel-2);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 44px 12px 16px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(138,180,248,0.15);
+    }
+
+    .search-box input::placeholder { color: var(--muted); }
+
+    .search-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent-strong);
+      color: white;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 0.15s;
+    }
+
+    .search-btn:hover { background: #1557b0; }
+
+    .search-results {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+      display: none;
+      box-shadow: var(--shadow);
+      z-index: 50;
+    }
+
+    .search-results.open { display: block; }
+
+    .result-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    .result-item:last-child { border-bottom: none; }
+    .result-item:hover { background: rgba(138,180,248,0.08); }
+
+    .result-item .name {
+      font-size: 13.5px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .result-item .addr {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Tabs / sections */
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .action-btn {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, border-color 0.15s;
+      font-family: inherit;
+    }
+
+    .action-btn:hover {
+      background: rgba(138,180,248,0.08);
+      border-color: var(--accent);
+    }
+
+    .action-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      opacity: 0.9;
+    }
+
+    /* Markers list */
+    .markers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .marker-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .marker-card:hover { border-color: var(--accent); }
+
+    .marker-pin {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-strong);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .marker-info { flex: 1; min-width: 0; }
+
+    .marker-info .title {
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .marker-info .coords {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .marker-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      opacity: 0.6;
+      transition: opacity 0.15s, color 0.15s;
+    }
+
+    .marker-remove:hover { opacity: 1; color: var(--danger); }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .empty-state svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    /* Map area */
+    .map-wrap {
+      position: relative;
+      height: 100%;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      background: #1a1d24;
+    }
+
+    /* Floating controls */
+    .map-controls {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 900;
+    }
+
+    .ctrl-btn {
+      width: 42px;
+      height: 42px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow);
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .ctrl-btn:hover { background: var(--panel-2); }
+    .ctrl-btn:active { transform: scale(0.96); }
+    .ctrl-btn.active { background: var(--accent-strong); border-color: var(--accent-strong); color: white; }
+
+    .ctrl-btn svg { width: 20px; height: 20px; }
+
+    /* Layer switcher */
+    .layers-panel {
+      position: absolute;
+      top: 16px;
+      right: 70px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 900;
+      min-width: 160px;
+    }
+
+    .layers-panel.open { display: block; }
+
+    .layer-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.1s;
+    }
+
+    .layer-option:hover { background: rgba(138,180,248,0.08); }
+    .layer-option.active { background: rgba(26,115,232,0.2); color: var(--accent); }
+
+    .layer-swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    /* Status bar */
+    .status-bar {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 12.5px;
+      color: var(--muted);
+      box-shadow: var(--shadow);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .status-bar .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    /* Toast */
+    .toast {
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 500;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Leaflet overrides */
+    .leaflet-control-zoom {
+      border: none !important;
+      box-shadow: var(--shadow) !important;
+      border-radius: 12px !important;
+      overflow: hidden;
+    }
+
+    .leaflet-control-zoom a {
+      background: var(--panel) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border) !important;
+      width: 36px !important;
+      height: 36px !important;
+      line-height: 36px !important;
+      font-size: 18px !important;
+    }
+
+    .leaflet-control-zoom a:hover {
+      background: var(--panel-2) !important;
+    }
+
+    .leaflet-control-attribution {
+      background: rgba(15,17,21,0.75) !important;
+      color: var(--muted) !important;
+      font-size: 10px !important;
+      border-radius: 6px 0 0 0 !important;
+      padding: 3px 8px !important;
+    }
+
+    .leaflet-control-attribution a { color: var(--accent) !important; }
+
+    .leaflet-popup-content-wrapper {
+      background: var(--panel) !important;
+      color: var(--text) !important;
+      border-radius: 12px !important;
+      box-shadow: var(--shadow) !important;
+      border: 1px solid var(--border);
+    }
+
+    .leaflet-popup-tip {
+      background: var(--panel) !important;
+      border: 1px solid var(--border);
+    }
+
+    .leaflet-popup-content {
+      margin: 14px 16px !important;
+      font-size: 13.5px !important;
+      line-height: 1.45;
+    }
+
+    .leaflet-popup-close-button {
+      color: var(--muted) !important;
+      font-size: 20px !important;
+      padding: 6px 10px !important;
+    }
+
+    /* Custom marker */
+    .custom-pin {
+      background: none;
+      border: none;
+    }
+
+    .custom-pin-inner {
+      width: 32px;
+      height: 32px;
+      background: var(--accent-strong);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 12px rgba(26,115,232,0.5);
+      border: 2px solid white;
+    }
+
+    .custom-pin-inner span {
+      transform: rotate(45deg);
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+    }
+
+    /* Mobile */
+    @media (max-width: 800px) {
+      #app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(340px, 90vw);
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 1100;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-toggle {
+        display: grid !important;
+      }
+    }
+
+    .mobile-toggle {
+      display: none;
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 950;
+      width: 42px;
+      height: 42px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      cursor: pointer;
+      place-items: center;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-logo">M</div>
+          <h1>Maps</h1>
+          <span>Premium</span>
+        </div>
+        <div class="search-box">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search places, cities, addresses..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="search-btn" id="searchBtn" title="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16">
+              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+            </svg>
+          </button>
+          <div class="search-results" id="searchResults"></div>
+        </div>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="section-title">Quick Actions</div>
+        <div class="quick-actions">
+          <button class="action-btn" id="btnLocate">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+              <circle cx="12" cy="12" r="8"/>
+            </svg>
+            My Location
+          </button>
+          <button class="action-btn" id="btnDropPin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/>
+              <circle cx="12" cy="11" r="2"/>
+            </svg>
+            Drop Pin
+          </button>
+          <button class="action-btn" id="btnClear">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+            </svg>
+            Clear All
+          </button>
+          <button class="action-btn" id="btnCopy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy Center
+          </button>
+        </div>
+
+        <div class="section-title">Saved Places</div>
+        <div class="markers-list" id="markersList">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/>
+              <circle cx="12" cy="11" r="2"/>
+            </svg>
+            <div>No places yet</div>
+            <div style="margin-top:6px;font-size:12px;opacity:0.7">Search or drop a pin on the map</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Map -->
+    <div class="map-wrap">
+      <button class="mobile-toggle" id="mobileToggle" title="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+          <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+
+      <div id="map"></div>
+
+      <div class="map-controls">
+        <button class="ctrl-btn" id="btnLayers" title="Map style">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </button>
+        <button class="ctrl-btn" id="btnFullscreen" title="Fullscreen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="layers-panel" id="layersPanel">
+        <div class="layer-option active" data-layer="streets">
+          <div class="layer-swatch" style="background:linear-gradient(135deg,#a8c5e2,#5a7a9a)"></div>
+          Streets
+        </div>
+        <div class="layer-option" data-layer="satellite">
+          <div class="layer-swatch" style="background:linear-gradient(135deg,#3a5a3a,#1a2a1a)"></div>
+          Satellite
+        </div>
+        <div class="layer-option" data-layer="dark">
+          <div class="layer-swatch" style="background:linear-gradient(135deg,#1a1d24,#0f1115)"></div>
+          Dark
+        </div>
+        <div class="layer-option" data-layer="topo">
+          <div class="layer-swatch" style="background:linear-gradient(135deg,#c4b59d,#8a7a5a)"></div>
+          Terrain
+        </div>
+      </div>
+
+      <div class="status-bar" id="statusBar">
+        <span class="dot"></span>
+        <span id="statusCoords">—</span>
+        <span style="opacity:0.4">|</span>
+        <span id="statusZoom">Zoom —</span>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ─────────────────────────────────────────────
+    //  TOP-OF-THE-LINE MAPS ENGINE
+    // ─────────────────────────────────────────────
+
+    const TILES = {
+      streets: {
+        url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+      },
+      satellite: {
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr: "Tiles &copy; Esri",
+        maxZoom: 19
+      },
+      dark: {
+        url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 20
+      },
+      topo: {
+        url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+        attr: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+        maxZoom: 17
+      }
+    };
+
+    // State
+    let map, currentLayer, markers = [], dropMode = false, markerId = 0;
+
+    // DOM
+    const $ = (sel) => document.querySelector(sel);
+    const searchInput   = $("#searchInput");
+    const searchResults = $("#searchResults");
+    const markersList   = $("#markersList");
+    const statusCoords  = $("#statusCoords");
+    const statusZoom    = $("#statusZoom");
+    const toastEl       = $("#toast");
+    const layersPanel   = $("#layersPanel");
+    const sidebar       = $("#sidebar");
+
+    // ── Init Map ──────────────────────────────────
+    function initMap() {
+      map = L.map("map", {
+        center: [37.7749, -122.4194], // SF default
+        zoom: 13,
+        zoomControl: true,
+        attributionControl: true
+      });
+
+      setLayer("streets");
+
+      map.on("mousemove", (e) => {
+        statusCoords.textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+      });
+
+      map.on("zoomend moveend", updateStatus);
+
+      map.on("click", (e) => {
+        if (dropMode) {
+          addMarker(e.latlng.lat, e.latlng.lng, `Dropped Pin`);
+          dropMode = false;
+          $("#btnDropPin").classList.remove("active");
+          toast("Pin dropped");
+        }
+      });
+
+      // Double-click to add pin quickly
+      map.on("dblclick", (e) => {
+        addMarker(e.latlng.lat, e.latlng.lng, "Quick Pin");
+      });
+
+      updateStatus();
+    }
+
+    function setLayer(name) {
+      if (currentLayer) map.removeLayer(currentLayer);
+      const t = TILES[name];
+      currentLayer = L.tileLayer(t.url, {
+        attribution: t.attr,
+        maxZoom: t.maxZoom,
+        subdomains: "abc"
+      }).addTo(map);
+
+      document.querySelectorAll(".layer-option").forEach(el => {
+        el.classList.toggle("active", el.dataset.layer === name);
+      });
+    }
+
+    function updateStatus() {
+      const c = map.getCenter();
+      statusCoords.textContent = `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`;
+      statusZoom.textContent = `Zoom ${map.getZoom()}`;
+    }
+
+    // ── Markers ───────────────────────────────────
+    function createIcon(label) {
+      return L.divIcon({
+        className: "custom-pin",
+        html: `<div class="custom-pin-inner"><span>${label}</span></div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+      });
+    }
+
+    function addMarker(lat, lng, title = "Place", fly = true) {
+      markerId += 1;
+      const id = markerId;
+      const icon = createIcon(id);
+
+      const marker = L.marker([lat, lng], { icon, draggable: true })
+        .addTo(map)
+        .bindPopup(`<strong>${title}</strong><br><span style="color:var(--muted);font-size:12px">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`);
+
+      marker.on("dragend", () => {
+        const pos = marker.getLatLng();
+        const m = markers.find(m => m.id === id);
+        if (m) {
+          m.lat = pos.lat;
+          m.lng = pos.lng;
+          renderMarkersList();
+        }
+      });
+
+      markers.push({ id, lat, lng, title, marker });
+      renderMarkersList();
+
+      if (fly) map.flyTo([lat, lng], Math.max(map.getZoom(), 15), { duration: 0.8 });
+      return id;
+    }
+
+    function removeMarker(id) {
+      const idx = markers.findIndex(m => m.id === id);
+      if (idx === -1) return;
+      map.removeLayer(markers[idx].marker);
+      markers.splice(idx, 1);
+      renderMarkersList();
+    }
+
+    function clearAllMarkers() {
+      markers.forEach(m => map.removeLayer(m.marker));
+      markers = [];
+      renderMarkersList();
+      toast("All places cleared");
+    }
+
+    function renderMarkersList() {
+      if (markers.length === 0) {
+        markersList.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/>
+              <circle cx="12" cy="11" r="2"/>
+            </svg>
+            <div>No places yet</div>
+            <div style="margin-top:6px;font-size:12px;opacity:0.7">Search or drop a pin on the map</div>
+          </div>`;
+        return;
+      }
+
+      markersList.innerHTML = markers.map(m => `
+        <div class="marker-card" data-id="${m.id}">
+          <div class="marker-pin">${m.id}</div>
+          <div class="marker-info">
+            <div class="title">${escapeHtml(m.title)}</div>
+            <div class="coords">${m.lat.toFixed(5)}, ${m.lng.toFixed(5)}</div>
+          </div>
+          <button class="marker-remove" data-remove="${m.id}" title="Remove">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      `).join("");
+
+      // Bind clicks
+      markersList.querySelectorAll(".marker-card").forEach(card => {
+        card.addEventListener("click", (e) => {
+          if (e.target.closest("[data-remove]")) return;
+          const id = +card.dataset.id;
+          const m = markers.find(x => x.id === id);
+          if (m) {
+            map.flyTo([m.lat, m.lng], 16, { duration: 0.7 });
+            m.marker.openPopup();
+          }
+        });
+      });
+
+      markersList.querySelectorAll("[data-remove]").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeMarker(+btn.dataset.remove);
+        });
+      });
+    }
+
+    // ── Search (Nominatim) ────────────────────────
+    let searchTimeout = null;
+
+    async function searchPlaces(query) {
+      if (!query || query.length < 2) {
+        searchResults.classList.remove("open");
+        return;
+      }
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
+        const res = await fetch(url, {
+          headers: { "Accept-Language": "en" }
+        });
+        const data = await res.json();
+
+        if (!data.length) {
+          searchResults.innerHTML = `<div class="result-item"><div class="name">No results</div></div>`;
+          searchResults.classList.add("open");
+          return;
+        }
+
+        searchResults.innerHTML = data.map(item => {
+          const name = item.display_name.split(",")[0];
+          return `
+            <div class="result-item" data-lat="${item.lat}" data-lng="${item.lon}" data-name="${escapeHtml(name)}">
+              <div class="name">${escapeHtml(name)}</div>
+              <div class="addr">${escapeHtml(item.display_name)}</div>
+            </div>`;
+        }).join("");
+
+        searchResults.classList.add("open");
+
+        searchResults.querySelectorAll(".result-item").forEach(el => {
+          el.addEventListener("click", () => {
+            const lat = +el.dataset.lat;
+            const lng = +el.dataset.lng;
+            const name = el.dataset.name;
+            addMarker(lat, lng, name);
+            searchResults.classList.remove("open");
+            searchInput.value = name;
+          });
+        });
+      } catch (err) {
+        console.error(err);
+        toast("Search failed — check connection");
+      }
+    }
+
+    // ── Geolocation ───────────────────────────────
+    function locateMe() {
+      if (!navigator.geolocation) {
+        toast("Geolocation not supported");
+        return;
+      }
+      toast("Locating…");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          addMarker(latitude, longitude, "My Location");
+          toast("Location found");
+        },
+        () => toast("Unable to get location")
+      );
+    }
+
+    // ── Utils ─────────────────────────────────────
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastEl._timer);
+      toastEl._timer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function copyCenter() {
+      const c = map.getCenter();
+      const text = `${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}`;
+      navigator.clipboard.writeText(text).then(() => {
+        toast("Coordinates copied");
+      }).catch(() => toast(text));
+    }
+
+    // ── Event wiring ──────────────────────────────
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => searchPlaces(searchInput.value.trim()), 320);
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        searchPlaces(searchInput.value.trim());
+      }
+      if (e.key === "Escape") {
+        searchResults.classList.remove("open");
+      }
+    });
+
+    $("#searchBtn").addEventListener("click", () => {
+      searchPlaces(searchInput.value.trim());
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".search-box")) {
+        searchResults.classList.remove("open");
+      }
+    });
+
+    $("#btnLocate").addEventListener("click", locateMe);
+
+    $("#btnDropPin").addEventListener("click", () => {
+      dropMode = !dropMode;
+      $("#btnDropPin").classList.toggle("active", dropMode);
+      toast(dropMode ? "Click map to drop pin" : "Drop mode off");
+    });
+
+    $("#btnClear").addEventListener("click", clearAllMarkers);
+    $("#btnCopy").addEventListener("click", copyCenter);
+
+    $("#btnLayers").addEventListener("click", (e) => {
+      e.stopPropagation();
+      layersPanel.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#layersPanel") && !e.target.closest("#btnLayers")) {
+        layersPanel.classList.remove("open");
+      }
+    });
+
+    document.querySelectorAll(".layer-option").forEach(el => {
+      el.addEventListener("click", () => {
+        setLayer(el.dataset.layer);
+        layersPanel.classList.remove("open");
+      });
+    });
+
+    $("#btnFullscreen").addEventListener("click", () => {
+      const el = document.documentElement;
+      if (!document.fullscreenElement) {
+        el.requestFullscreen?.();
+      } else {
+        document.exitFullscreen?.();
+      }
+    });
+
+    $("#mobileToggle").addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+    });
+
+    // Close sidebar on map click (mobile)
+    document.getElementById("map").addEventListener("click", () => {
+      if (window.innerWidth <= 800) sidebar.classList.remove("open");
+    });
+
+    // ── Boot ──────────────────────────────────────
+    initMap();
+
+    // Welcome pin
+    setTimeout(() => {
+      addMarker(37.7749, -122.4194, "San Francisco", false);
+      toast("Welcome — search or drop pins");
+    }, 400);
+  </script>
+</body>
+</html>
