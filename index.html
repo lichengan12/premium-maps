@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Maps — Premium</title>
+  <title>Maps — Premium (Google)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
   <style>
     :root {
       --bg: #0f1115;
@@ -176,7 +174,6 @@
       color: var(--muted);
     }
 
-    /* Tabs / sections */
     .sidebar-body {
       flex: 1;
       overflow-y: auto;
@@ -220,6 +217,12 @@
       border-color: var(--accent);
     }
 
+    .action-btn.active {
+      background: rgba(26,115,232,0.2);
+      border-color: var(--accent-strong);
+      color: var(--accent);
+    }
+
     .action-btn svg {
       width: 18px;
       height: 18px;
@@ -227,7 +230,6 @@
       opacity: 0.9;
     }
 
-    /* Markers list */
     .markers-list {
       display: flex;
       flex-direction: column;
@@ -317,7 +319,6 @@
       background: #1a1d24;
     }
 
-    /* Floating controls */
     .map-controls {
       position: absolute;
       top: 16px;
@@ -325,7 +326,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      z-index: 900;
+      z-index: 5;
     }
 
     .ctrl-btn {
@@ -348,7 +349,6 @@
 
     .ctrl-btn svg { width: 20px; height: 20px; }
 
-    /* Layer switcher */
     .layers-panel {
       position: absolute;
       top: 16px;
@@ -359,8 +359,8 @@
       padding: 8px;
       box-shadow: var(--shadow);
       display: none;
-      z-index: 900;
-      min-width: 160px;
+      z-index: 5;
+      min-width: 170px;
     }
 
     .layers-panel.open { display: block; }
@@ -387,10 +387,9 @@
       border: 1px solid var(--border);
     }
 
-    /* Status bar */
     .status-bar {
       position: absolute;
-      bottom: 16px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--panel);
@@ -400,7 +399,7 @@
       font-size: 12.5px;
       color: var(--muted);
       box-shadow: var(--shadow);
-      z-index: 900;
+      z-index: 5;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -415,10 +414,9 @@
       background: var(--success);
     }
 
-    /* Toast */
     .toast {
       position: absolute;
-      bottom: 70px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
       background: var(--panel);
@@ -432,7 +430,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s, transform 0.25s;
-      z-index: 1000;
+      z-index: 10;
     }
 
     .toast.show {
@@ -440,89 +438,10 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* Leaflet overrides */
-    .leaflet-control-zoom {
-      border: none !important;
-      box-shadow: var(--shadow) !important;
-      border-radius: 12px !important;
-      overflow: hidden;
-    }
+    /* Hide default Google UI we don't need */
+    .gm-style .gm-style-cc,
+    .gm-bundled-control .gmnoprint { display: none !important; }
 
-    .leaflet-control-zoom a {
-      background: var(--panel) !important;
-      color: var(--text) !important;
-      border: 1px solid var(--border) !important;
-      width: 36px !important;
-      height: 36px !important;
-      line-height: 36px !important;
-      font-size: 18px !important;
-    }
-
-    .leaflet-control-zoom a:hover {
-      background: var(--panel-2) !important;
-    }
-
-    .leaflet-control-attribution {
-      background: rgba(15,17,21,0.75) !important;
-      color: var(--muted) !important;
-      font-size: 10px !important;
-      border-radius: 6px 0 0 0 !important;
-      padding: 3px 8px !important;
-    }
-
-    .leaflet-control-attribution a { color: var(--accent) !important; }
-
-    .leaflet-popup-content-wrapper {
-      background: var(--panel) !important;
-      color: var(--text) !important;
-      border-radius: 12px !important;
-      box-shadow: var(--shadow) !important;
-      border: 1px solid var(--border);
-    }
-
-    .leaflet-popup-tip {
-      background: var(--panel) !important;
-      border: 1px solid var(--border);
-    }
-
-    .leaflet-popup-content {
-      margin: 14px 16px !important;
-      font-size: 13.5px !important;
-      line-height: 1.45;
-    }
-
-    .leaflet-popup-close-button {
-      color: var(--muted) !important;
-      font-size: 20px !important;
-      padding: 6px 10px !important;
-    }
-
-    /* Custom marker */
-    .custom-pin {
-      background: none;
-      border: none;
-    }
-
-    .custom-pin-inner {
-      width: 32px;
-      height: 32px;
-      background: var(--accent-strong);
-      border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
-      display: grid;
-      place-items: center;
-      box-shadow: 0 4px 12px rgba(26,115,232,0.5);
-      border: 2px solid white;
-    }
-
-    .custom-pin-inner span {
-      transform: rotate(45deg);
-      font-size: 12px;
-      font-weight: 700;
-      color: white;
-    }
-
-    /* Mobile */
     @media (max-width: 800px) {
       #app { grid-template-columns: 1fr; }
       .sidebar {
@@ -533,12 +452,10 @@
         width: min(340px, 90vw);
         transform: translateX(-100%);
         transition: transform 0.25s ease;
-        z-index: 1100;
+        z-index: 20;
       }
       .sidebar.open { transform: translateX(0); }
-      .mobile-toggle {
-        display: grid !important;
-      }
+      .mobile-toggle { display: grid !important; }
     }
 
     .mobile-toggle {
@@ -546,7 +463,7 @@
       position: absolute;
       top: 16px;
       left: 16px;
-      z-index: 950;
+      z-index: 10;
       width: 42px;
       height: 42px;
       background: var(--panel);
@@ -561,13 +478,12 @@
 </head>
 <body>
   <div id="app">
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="brand">
-          <div class="brand-logo">M</div>
+          <div class="brand-logo">G</div>
           <h1>Maps</h1>
-          <span>Premium</span>
+          <span>Google</span>
         </div>
         <div class="search-box">
           <input
@@ -632,7 +548,6 @@
       </div>
     </aside>
 
-    <!-- Map -->
     <div class="map-wrap">
       <button class="mobile-toggle" id="mobileToggle" title="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
@@ -657,23 +572,19 @@
       </div>
 
       <div class="layers-panel" id="layersPanel">
-        <div class="layer-option active" data-layer="streets">
+        <div class="layer-option" data-layer="roadmap">
           <div class="layer-swatch" style="background:linear-gradient(135deg,#a8c5e2,#5a7a9a)"></div>
-          Streets
+          Roadmap
         </div>
-        <div class="layer-option" data-layer="satellite">
+        <div class="layer-option active" data-layer="satellite">
           <div class="layer-swatch" style="background:linear-gradient(135deg,#2a4a2a,#0a1a0a)"></div>
-          Google Satellite
+          Satellite
         </div>
         <div class="layer-option" data-layer="hybrid">
           <div class="layer-swatch" style="background:linear-gradient(135deg,#3a5a3a,#1a3a1a)"></div>
-          Google Hybrid
+          Hybrid
         </div>
-        <div class="layer-option" data-layer="dark">
-          <div class="layer-swatch" style="background:linear-gradient(135deg,#1a1d24,#0f1115)"></div>
-          Dark
-        </div>
-        <div class="layer-option" data-layer="topo">
+        <div class="layer-option" data-layer="terrain">
           <div class="layer-swatch" style="background:linear-gradient(135deg,#c4b59d,#8a7a5a)"></div>
           Terrain
         </div>
@@ -690,53 +601,18 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Official Google Maps JavaScript API with your key -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQXAhnouB23QWGRAchHsdg9XcVDn-fdUg&libraries=places&callback=initMap" async defer></script>
+
   <script>
     // ─────────────────────────────────────────────
-    //  TOP-OF-THE-LINE MAPS ENGINE
+    //  PREMIUM GOOGLE MAPS ENGINE
+    //  Using official Google Maps JavaScript API
     // ─────────────────────────────────────────────
 
-    // ── Google Satellite support ──────────────────────
-    // Uses public Google tile endpoints (satellite + hybrid).
-    // For heavy / commercial use, get a free key at:
-    // https://console.cloud.google.com/ → enable "Maps JavaScript API"
-    // and replace the URLs below with the official tile service.
-    const TILES = {
-      streets: {
-        url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19
-      },
-      satellite: {
-        // Real Google Satellite imagery
-        url: "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-        attr: "Imagery &copy; Google",
-        maxZoom: 21,
-        subdomains: "0123"
-      },
-      hybrid: {
-        // Google Satellite + labels (roads, places)
-        url: "https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-        attr: "Imagery &copy; Google",
-        maxZoom: 21,
-        subdomains: "0123"
-      },
-      dark: {
-        url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        attr: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        maxZoom: 20
-      },
-      topo: {
-        url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-        attr: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
-        maxZoom: 17
-      }
-    };
+    let map, markers = [], dropMode = false, markerId = 0;
+    let placesService, autocompleteService;
 
-    // State
-    let map, currentLayer, markers = [], dropMode = false, markerId = 0;
-
-    // DOM
     const $ = (sel) => document.querySelector(sel);
     const searchInput   = $("#searchInput");
     const searchResults = $("#searchResults");
@@ -747,107 +623,123 @@
     const layersPanel   = $("#layersPanel");
     const sidebar       = $("#sidebar");
 
-    // ── Init Map ──────────────────────────────────
+    // ── Init (called by Google Maps callback) ─────
     function initMap() {
-      map = L.map("map", {
-        center: [37.7749, -122.4194], // SF default
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 37.7749, lng: -122.4194 },
         zoom: 13,
+        mapTypeId: "satellite",
+        disableDefaultUI: true,
         zoomControl: true,
-        attributionControl: true
+        zoomControlOptions: {
+          position: google.maps.ControlPosition.RIGHT_BOTTOM
+        },
+        gestureHandling: "greedy",
+        styles: [] // keep clean Google look
       });
 
-      setLayer("streets");
+      placesService = new google.maps.places.PlacesService(map);
+      autocompleteService = new google.maps.places.AutocompleteService();
 
-      map.on("mousemove", (e) => {
-        statusCoords.textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+      // Live coordinates
+      map.addListener("mousemove", (e) => {
+        if (e.latLng) {
+          statusCoords.textContent = `${e.latLng.lat().toFixed(5)}, ${e.latLng.lng().toFixed(5)}`;
+        }
       });
 
-      map.on("zoomend moveend", updateStatus);
+      map.addListener("zoom_changed", updateStatus);
+      map.addListener("center_changed", updateStatus);
 
-      map.on("click", (e) => {
-        if (dropMode) {
-          addMarker(e.latlng.lat, e.latlng.lng, `Dropped Pin`);
+      // Drop pin on click when mode active
+      map.addListener("click", (e) => {
+        if (dropMode && e.latLng) {
+          addMarker(e.latLng.lat(), e.latLng.lng(), "Dropped Pin");
           dropMode = false;
           $("#btnDropPin").classList.remove("active");
           toast("Pin dropped");
         }
       });
 
-      // Double-click to add pin quickly
-      map.on("dblclick", (e) => {
-        addMarker(e.latlng.lat, e.latlng.lng, "Quick Pin");
+      // Double-click quick pin
+      map.addListener("dblclick", (e) => {
+        if (e.latLng) addMarker(e.latLng.lat(), e.latLng.lng(), "Quick Pin");
       });
 
       updateStatus();
-    }
 
-    function setLayer(name) {
-      if (currentLayer) map.removeLayer(currentLayer);
-      const t = TILES[name];
-      currentLayer = L.tileLayer(t.url, {
-        attribution: t.attr,
-        maxZoom: t.maxZoom || 19,
-        subdomains: t.subdomains || "abc"
-      }).addTo(map);
-
-      document.querySelectorAll(".layer-option").forEach(el => {
-        el.classList.toggle("active", el.dataset.layer === name);
-      });
+      // Welcome pin
+      setTimeout(() => {
+        addMarker(37.7749, -122.4194, "San Francisco", false);
+        toast("Google Maps ready — Satellite mode");
+      }, 500);
     }
 
     function updateStatus() {
+      if (!map) return;
       const c = map.getCenter();
-      statusCoords.textContent = `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`;
+      statusCoords.textContent = `${c.lat().toFixed(5)}, ${c.lng().toFixed(5)}`;
       statusZoom.textContent = `Zoom ${map.getZoom()}`;
     }
 
     // ── Markers ───────────────────────────────────
-    function createIcon(label) {
-      return L.divIcon({
-        className: "custom-pin",
-        html: `<div class="custom-pin-inner"><span>${label}</span></div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-      });
-    }
-
     function addMarker(lat, lng, title = "Place", fly = true) {
       markerId += 1;
       const id = markerId;
-      const icon = createIcon(id);
 
-      const marker = L.marker([lat, lng], { icon, draggable: true })
-        .addTo(map)
-        .bindPopup(`<strong>${title}</strong><br><span style="color:var(--muted);font-size:12px">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`);
+      const marker = new google.maps.Marker({
+        position: { lat, lng },
+        map,
+        title,
+        label: {
+          text: String(id),
+          color: "white",
+          fontWeight: "700",
+          fontSize: "12px"
+        },
+        animation: google.maps.Animation.DROP,
+        draggable: true
+      });
 
-      marker.on("dragend", () => {
-        const pos = marker.getLatLng();
+      const info = new google.maps.InfoWindow({
+        content: `<div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:140px">
+          <strong style="font-size:14px">${escapeHtml(title)}</strong><br>
+          <span style="color:#5f6368;font-size:12px">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
+        </div>`
+      });
+
+      marker.addListener("click", () => info.open(map, marker));
+
+      marker.addListener("dragend", () => {
+        const pos = marker.getPosition();
         const m = markers.find(m => m.id === id);
         if (m) {
-          m.lat = pos.lat;
-          m.lng = pos.lng;
+          m.lat = pos.lat();
+          m.lng = pos.lng();
           renderMarkersList();
         }
       });
 
-      markers.push({ id, lat, lng, title, marker });
+      markers.push({ id, lat, lng, title, marker, info });
       renderMarkersList();
 
-      if (fly) map.flyTo([lat, lng], Math.max(map.getZoom(), 15), { duration: 0.8 });
+      if (fly) {
+        map.panTo({ lat, lng });
+        if (map.getZoom() < 15) map.setZoom(15);
+      }
       return id;
     }
 
     function removeMarker(id) {
       const idx = markers.findIndex(m => m.id === id);
       if (idx === -1) return;
-      map.removeLayer(markers[idx].marker);
+      markers[idx].marker.setMap(null);
       markers.splice(idx, 1);
       renderMarkersList();
     }
 
     function clearAllMarkers() {
-      markers.forEach(m => map.removeLayer(m.marker));
+      markers.forEach(m => m.marker.setMap(null));
       markers = [];
       renderMarkersList();
       toast("All places cleared");
@@ -882,15 +774,15 @@
         </div>
       `).join("");
 
-      // Bind clicks
       markersList.querySelectorAll(".marker-card").forEach(card => {
         card.addEventListener("click", (e) => {
           if (e.target.closest("[data-remove]")) return;
           const id = +card.dataset.id;
           const m = markers.find(x => x.id === id);
           if (m) {
-            map.flyTo([m.lat, m.lng], 16, { duration: 0.7 });
-            m.marker.openPopup();
+            map.panTo({ lat: m.lat, lng: m.lng });
+            map.setZoom(16);
+            m.info.open(map, m.marker);
           }
         });
       });
@@ -903,53 +795,54 @@
       });
     }
 
-    // ── Search (Nominatim) ────────────────────────
+    // ── Google Places Search ──────────────────────
     let searchTimeout = null;
 
-    async function searchPlaces(query) {
+    function searchPlaces(query) {
       if (!query || query.length < 2) {
         searchResults.classList.remove("open");
         return;
       }
 
-      try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
-        const res = await fetch(url, {
-          headers: { "Accept-Language": "en" }
-        });
-        const data = await res.json();
+      autocompleteService.getPlacePredictions(
+        { input: query, types: ["geocode", "establishment"] },
+        (predictions, status) => {
+          if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
+            searchResults.innerHTML = `<div class="result-item"><div class="name">No results</div></div>`;
+            searchResults.classList.add("open");
+            return;
+          }
 
-        if (!data.length) {
-          searchResults.innerHTML = `<div class="result-item"><div class="name">No results</div></div>`;
+          searchResults.innerHTML = predictions.slice(0, 6).map(p => `
+            <div class="result-item" data-place-id="${p.place_id}" data-name="${escapeHtml(p.structured_formatting.main_text)}">
+              <div class="name">${escapeHtml(p.structured_formatting.main_text)}</div>
+              <div class="addr">${escapeHtml(p.description)}</div>
+            </div>
+          `).join("");
+
           searchResults.classList.add("open");
-          return;
-        }
 
-        searchResults.innerHTML = data.map(item => {
-          const name = item.display_name.split(",")[0];
-          return `
-            <div class="result-item" data-lat="${item.lat}" data-lng="${item.lon}" data-name="${escapeHtml(name)}">
-              <div class="name">${escapeHtml(name)}</div>
-              <div class="addr">${escapeHtml(item.display_name)}</div>
-            </div>`;
-        }).join("");
+          searchResults.querySelectorAll(".result-item").forEach(el => {
+            el.addEventListener("click", () => {
+              const placeId = el.dataset.placeId;
+              const name = el.dataset.name;
 
-        searchResults.classList.add("open");
-
-        searchResults.querySelectorAll(".result-item").forEach(el => {
-          el.addEventListener("click", () => {
-            const lat = +el.dataset.lat;
-            const lng = +el.dataset.lng;
-            const name = el.dataset.name;
-            addMarker(lat, lng, name);
-            searchResults.classList.remove("open");
-            searchInput.value = name;
+              placesService.getDetails(
+                { placeId, fields: ["geometry", "name", "formatted_address"] },
+                (place, status) => {
+                  if (status === google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+                    const lat = place.geometry.location.lat();
+                    const lng = place.geometry.location.lng();
+                    addMarker(lat, lng, place.name || name);
+                    searchResults.classList.remove("open");
+                    searchInput.value = place.name || name;
+                  }
+                }
+              );
+            });
           });
-        });
-      } catch (err) {
-        console.error(err);
-        toast("Search failed — check connection");
-      }
+        }
+      );
     }
 
     // ── Geolocation ───────────────────────────────
@@ -987,16 +880,23 @@
 
     function copyCenter() {
       const c = map.getCenter();
-      const text = `${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}`;
+      const text = `${c.lat().toFixed(6)}, ${c.lng().toFixed(6)}`;
       navigator.clipboard.writeText(text).then(() => {
         toast("Coordinates copied");
       }).catch(() => toast(text));
     }
 
+    function setMapType(type) {
+      map.setMapTypeId(type);
+      document.querySelectorAll(".layer-option").forEach(el => {
+        el.classList.toggle("active", el.dataset.layer === type);
+      });
+    }
+
     // ── Event wiring ──────────────────────────────
     searchInput.addEventListener("input", () => {
       clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => searchPlaces(searchInput.value.trim()), 320);
+      searchTimeout = setTimeout(() => searchPlaces(searchInput.value.trim()), 280);
     });
 
     searchInput.addEventListener("keydown", (e) => {
@@ -1004,9 +904,7 @@
         e.preventDefault();
         searchPlaces(searchInput.value.trim());
       }
-      if (e.key === "Escape") {
-        searchResults.classList.remove("open");
-      }
+      if (e.key === "Escape") searchResults.classList.remove("open");
     });
 
     $("#searchBtn").addEventListener("click", () => {
@@ -1043,7 +941,7 @@
 
     document.querySelectorAll(".layer-option").forEach(el => {
       el.addEventListener("click", () => {
-        setLayer(el.dataset.layer);
+        setMapType(el.dataset.layer);
         layersPanel.classList.remove("open");
       });
     });
@@ -1061,19 +959,9 @@
       sidebar.classList.toggle("open");
     });
 
-    // Close sidebar on map click (mobile)
     document.getElementById("map").addEventListener("click", () => {
       if (window.innerWidth <= 800) sidebar.classList.remove("open");
     });
-
-    // ── Boot ──────────────────────────────────────
-    initMap();
-
-    // Welcome pin
-    setTimeout(() => {
-      addMarker(37.7749, -122.4194, "San Francisco", false);
-      toast("Welcome — search or drop pins");
-    }, 400);
   </script>
 </body>
 </html>
