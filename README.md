@@ -1,41 +1,18 @@
 # Premium Maps
 
-A polished, Google Maps-style web application built with **Leaflet** + **OpenStreetMap**.
+Google Maps-style app with:
+- Email + Google Sign-In
+- Live friend location sharing (PeerJS rooms)
+- Voice calls
+- 1080p screen sharing
+- Satellite / Hybrid / Places search
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![No API Key](https://img.shields.io/badge/API%20Key-Not%20Required-brightgreen)
+## Setup
+1. Open `index.html` (or enable GitHub Pages)
+2. Create room → share code with a friend
+3. Both join → locations share live; use Voice / Screen
 
-## Features
-
-- **Dark premium UI** — modern Inter typography, glass panels, smooth animations
-- **Real place search** — powered by Nominatim (OpenStreetMap)
-- **Drop pins** — click-to-drop mode + double-click shortcut
-- **Draggable numbered markers** with popups
-- **Saved Places sidebar** — fly-to and remove
-- **Map styles** — Streets / Satellite / Dark / Terrain
-- **My Location** (browser geolocation)
-- **Live coordinates + zoom** status bar
-- **Copy center coordinates**
-- **Fullscreen toggle**
-- **Fully responsive** (mobile sidebar)
-
-## Quick Start
-
-Just open `index.html` in any modern browser.
-
-Or serve it locally:
-
-```bash
-npx serve .
-```
-
-## Tech Stack
-
-- Leaflet 1.9
-- OpenStreetMap / Carto / Esri / OpenTopoMap tiles
-- Nominatim geocoding
-- Vanilla JS (no frameworks)
-
-## License
-
-MIT
+## APIs
+- Google Maps JavaScript API + Places
+- Google Identity (OAuth Client ID)
+- PeerJS (WebRTC signaling)
