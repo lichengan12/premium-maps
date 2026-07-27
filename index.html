@@ -662,8 +662,12 @@
           Streets
         </div>
         <div class="layer-option" data-layer="satellite">
-          <div class="layer-swatch" style="background:linear-gradient(135deg,#3a5a3a,#1a2a1a)"></div>
-          Satellite
+          <div class="layer-swatch" style="background:linear-gradient(135deg,#2a4a2a,#0a1a0a)"></div>
+          Google Satellite
+        </div>
+        <div class="layer-option" data-layer="hybrid">
+          <div class="layer-swatch" style="background:linear-gradient(135deg,#3a5a3a,#1a3a1a)"></div>
+          Google Hybrid
         </div>
         <div class="layer-option" data-layer="dark">
           <div class="layer-swatch" style="background:linear-gradient(135deg,#1a1d24,#0f1115)"></div>
@@ -692,6 +696,11 @@
     //  TOP-OF-THE-LINE MAPS ENGINE
     // ─────────────────────────────────────────────
 
+    // ── Google Satellite support ──────────────────────
+    // Uses public Google tile endpoints (satellite + hybrid).
+    // For heavy / commercial use, get a free key at:
+    // https://console.cloud.google.com/ → enable "Maps JavaScript API"
+    // and replace the URLs below with the official tile service.
     const TILES = {
       streets: {
         url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -699,9 +708,18 @@
         maxZoom: 19
       },
       satellite: {
-        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr: "Tiles &copy; Esri",
-        maxZoom: 19
+        // Real Google Satellite imagery
+        url: "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+        attr: "Imagery &copy; Google",
+        maxZoom: 21,
+        subdomains: "0123"
+      },
+      hybrid: {
+        // Google Satellite + labels (roads, places)
+        url: "https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        attr: "Imagery &copy; Google",
+        maxZoom: 21,
+        subdomains: "0123"
       },
       dark: {
         url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
@@ -768,8 +786,8 @@
       const t = TILES[name];
       currentLayer = L.tileLayer(t.url, {
         attribution: t.attr,
-        maxZoom: t.maxZoom,
-        subdomains: "abc"
+        maxZoom: t.maxZoom || 19,
+        subdomains: t.subdomains || "abc"
       }).addTo(map);
 
       document.querySelectorAll(".layer-option").forEach(el => {
