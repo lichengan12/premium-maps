@@ -18,7 +18,7 @@
     html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); overflow: hidden; }
     #app { display: grid; grid-template-columns: 380px 1fr; height: 100%; }
     #welcome { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(ellipse at 30% 20%, #1a2a4a 0%, var(--bg) 60%); display: flex; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.4s, visibility 0.4s; }
-    #welcome.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    #welcome.hidden { opacity: 0; visibility: hidden; pointer-events: none; display: none !important; }
     .welcome-card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 32px 28px; max-width: 420px; width: 100%; box-shadow: var(--shadow); text-align: center; }
     .welcome-logo { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #1a73e8, #8ab4f8); display: grid; place-items: center; font-weight: 700; font-size: 24px; color: white; margin: 0 auto 14px; }
     .welcome-card h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
@@ -30,9 +30,9 @@
     .auth-form.active { display: flex; }
     .auth-form label { font-size: 11.5px; color: var(--muted); }
     .auth-form input { width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; color: var(--text); font-size: 13.5px; font-family: inherit; outline: none; }
-    .btn-primary { background: var(--accent-strong); color: white; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .btn-primary { background: var(--accent-strong); color: white; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; }
     .btn-google { background: white; color: #3c4043; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; }
-    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; font-size: 12.5px; font-family: inherit; cursor: pointer; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; font-size: 12.5px; font-family: inherit; cursor: pointer; width: 100%; }
     .divider { display: flex; align-items: center; gap: 12px; margin: 12px 0; color: var(--muted); font-size: 11.5px; }
     .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
     .welcome-actions { display: flex; flex-direction: column; gap: 8px; }
@@ -158,7 +158,7 @@
         <div class="room-box">
           <div class="row">
             <input type="text" id="roomCode" placeholder="Room code" maxlength="64" />
-            <button class="btn-primary" id="btnJoinRoom" type="button" style="padding:8px 12px;font-size:12px">Join</button>
+            <button class="btn-primary" id="btnJoinRoom" type="button" style="padding:8px 12px;font-size:12px;width:auto">Join</button>
           </div>
           <div class="row">
             <button class="btn-ghost" id="btnCreateRoom" type="button" style="flex:1">Create room</button>
@@ -202,10 +202,10 @@
     </div>
   </div>
   <audio id="remoteAudio" autoplay></audio>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQXAhnouB23QWGRAchHsdg9XcVDn-fdUg&libraries=places&callback=initMap" async defer></script>
   <script src="google-auth.js"></script>
   <script src="app.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQXAhnouB23QWGRAchHsdg9XcVDn-fdUg&libraries=places&callback=initMap&loading=async" async defer></script>
 </body>
 </html>
