@@ -15,123 +15,93 @@
       --font: "Inter", system-ui, -apple-system, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); overflow: hidden; }
     #app { display: grid; grid-template-columns: 380px 1fr; height: 100%; }
     #welcome { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(ellipse at 30% 20%, #1a2a4a 0%, var(--bg) 60%); display: flex; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.4s, visibility 0.4s; }
     #welcome.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
     .welcome-card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 32px 28px; max-width: 420px; width: 100%; box-shadow: var(--shadow); text-align: center; }
-    .welcome-logo { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #1a73e8, #8ab4f8); display: grid; place-items: center; font-weight: 700; font-size: 24px; color: white; margin: 0 auto 14px; box-shadow: 0 8px 24px rgba(26,115,232,0.45); }
+    .welcome-logo { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #1a73e8, #8ab4f8); display: grid; place-items: center; font-weight: 700; font-size: 24px; color: white; margin: 0 auto 14px; }
     .welcome-card h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-    .welcome-card > p { color: var(--muted); font-size: 13.5px; line-height: 1.5; margin-bottom: 16px; }
+    .welcome-card > p { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
     .auth-tabs { display: flex; gap: 4px; background: var(--panel-2); border-radius: 10px; padding: 4px; margin-bottom: 14px; }
     .auth-tab { flex: 1; border: none; background: transparent; color: var(--muted); padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
     .auth-tab.active { background: var(--accent-strong); color: white; }
     .auth-form { display: none; flex-direction: column; gap: 8px; text-align: left; }
     .auth-form.active { display: flex; }
-    .auth-form label { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+    .auth-form label { font-size: 11.5px; color: var(--muted); }
     .auth-form input { width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; color: var(--text); font-size: 13.5px; font-family: inherit; outline: none; }
-    .auth-form input:focus { border-color: var(--accent); }
-    .btn-primary { background: var(--accent-strong); color: white; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-primary:hover { background: #1557b0; }
-    .btn-google { background: white; color: #3c4043; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .btn-google:hover { background: #f8f9fa; }
-    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; font-size: 12.5px; font-weight: 500; font-family: inherit; cursor: pointer; }
-    .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+    .btn-primary { background: var(--accent-strong); color: white; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .btn-google { background: white; color: #3c4043; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; font-size: 12.5px; font-family: inherit; cursor: pointer; }
     .divider { display: flex; align-items: center; gap: 12px; margin: 12px 0; color: var(--muted); font-size: 11.5px; }
     .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
     .welcome-actions { display: flex; flex-direction: column; gap: 8px; }
-    .welcome-note { margin-top: 14px; font-size: 11px; color: var(--muted); opacity: 0.85; }
-    .sidebar { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 1000; position: relative; }
-    .sidebar-header { padding: 14px 14px 10px; border-bottom: 1px solid var(--border); }
+    .welcome-note { margin-top: 14px; font-size: 11px; color: var(--muted); }
+    .sidebar { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sidebar-header { padding: 14px; border-bottom: 1px solid var(--border); }
     .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
     .brand-logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #1a73e8, #8ab4f8); display: grid; place-items: center; font-weight: 700; font-size: 12px; color: white; }
-    .brand h1 { font-size: 16px; font-weight: 700; }
-    .brand span { font-size: 10px; color: var(--muted); margin-left: auto; background: var(--panel-2); padding: 2px 7px; border-radius: 999px; }
+    .brand h1 { font-size: 16px; }
     .user-chip { display: none; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; padding: 7px 9px; margin-bottom: 10px; }
     .user-chip.visible { display: flex; }
-    .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-strong); display: grid; place-items: center; font-weight: 700; font-size: 11px; color: white; overflow: hidden; flex-shrink: 0; }
+    .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-strong); display: grid; place-items: center; font-weight: 700; font-size: 11px; color: white; overflow: hidden; }
     .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .user-meta { flex: 1; min-width: 0; text-align: left; }
-    .user-meta .name { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-meta .email { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-meta .name { font-size: 12.5px; font-weight: 600; }
+    .user-meta .email { font-size: 10.5px; color: var(--muted); }
     .search-box { position: relative; }
     .search-box input { width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; padding: 10px 40px 10px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; }
-    .search-box input:focus { border-color: var(--accent); }
-    .search-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border: none; border-radius: 8px; background: var(--accent-strong); color: white; cursor: pointer; display: grid; place-items: center; }
-    .search-results { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; max-height: 220px; overflow-y: auto; display: none; box-shadow: var(--shadow); z-index: 50; }
+    .search-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border: none; border-radius: 8px; background: var(--accent-strong); color: white; cursor: pointer; }
+    .search-results { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; max-height: 220px; overflow-y: auto; display: none; z-index: 50; }
     .search-results.open { display: block; }
     .result-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
-    .result-item:hover { background: rgba(138,180,248,0.08); }
     .result-item .name { font-size: 12.5px; font-weight: 500; }
     .result-item .addr { font-size: 11px; color: var(--muted); }
     .sidebar-body { flex: 1; overflow-y: auto; padding: 12px; }
-    .section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 7px; margin-top: 2px; }
+    .section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
     .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-    .action-btn { background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 9px; color: var(--text); font-size: 11.5px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; }
-    .action-btn:hover { border-color: var(--accent); }
-    .action-btn.active { background: rgba(26,115,232,0.2); border-color: var(--accent-strong); color: var(--accent); }
-    .action-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .action-btn { background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 9px; color: var(--text); font-size: 11.5px; font-weight: 500; cursor: pointer; font-family: inherit; }
+    .action-btn.active { border-color: var(--accent-strong); color: var(--accent); }
     .room-box { background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; padding: 10px; margin-bottom: 12px; }
     .room-box .row { display: flex; gap: 6px; margin-bottom: 7px; }
-    .room-box input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 12.5px; font-family: inherit; outline: none; }
-    .room-box input:focus { border-color: var(--accent); }
+    .room-box input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 12.5px; font-family: inherit; }
     .room-status { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
     .room-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
-    .room-status.live .dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .room-status.live .dot { background: var(--success); }
     .friends-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-    .friend-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
-    .friend-avatar { width: 26px; height: 26px; border-radius: 50%; background: #5f6368; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: white; flex-shrink: 0; }
-    .friend-avatar.online { background: var(--success); }
-    .friend-info { flex: 1; min-width: 0; }
-    .friend-info .fname { font-size: 12.5px; font-weight: 600; }
-    .friend-info .fmeta { font-size: 10.5px; color: var(--muted); }
     .call-bar { display: none; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
     .call-bar.visible { display: flex; }
-    .call-btn { flex: 1; min-width: 64px; border: 1px solid var(--border); border-radius: 9px; padding: 8px 6px; background: var(--panel-2); color: var(--text); font-size: 11px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .call-btn:hover { border-color: var(--accent); }
-    .call-btn.on { background: rgba(26,115,232,0.25); border-color: var(--accent-strong); color: var(--accent); }
-    .call-btn.hangup { background: rgba(242,139,130,0.15); border-color: var(--danger); color: var(--danger); }
-    .call-btn svg { width: 16px; height: 16px; }
+    .call-btn { flex: 1; border: 1px solid var(--border); border-radius: 9px; padding: 8px 6px; background: var(--panel-2); color: var(--text); font-size: 11px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .call-btn.on { border-color: var(--accent-strong); color: var(--accent); }
+    .call-btn.hangup { border-color: var(--danger); color: var(--danger); }
     .markers-list { display: flex; flex-direction: column; gap: 5px; }
-    .marker-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
-    .marker-card:hover { border-color: var(--accent); }
-    .marker-pin { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-strong); display: grid; place-items: center; font-size: 10px; font-weight: 700; color: white; flex-shrink: 0; }
-    .marker-pin.me { background: linear-gradient(135deg, #34a853, #81c995); }
-    .marker-pin.friend { background: linear-gradient(135deg, #f9ab00, #fdd663); color: #202124; }
-    .marker-info { flex: 1; min-width: 0; }
-    .marker-info .title { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .marker-info .coords { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
-    .marker-remove { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px; opacity: 0.6; }
-    .marker-remove:hover { opacity: 1; color: var(--danger); }
+    .marker-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; display: flex; gap: 8px; cursor: pointer; }
+    .marker-pin { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-strong); display: grid; place-items: center; font-size: 10px; font-weight: 700; color: white; }
+    .marker-pin.me { background: #34a853; }
+    .marker-info .title { font-size: 12.5px; font-weight: 600; }
+    .marker-info .coords { font-size: 10.5px; color: var(--muted); }
     .empty-state { text-align: center; padding: 20px 10px; color: var(--muted); font-size: 12px; }
     .map-wrap { position: relative; height: 100%; }
     #map { width: 100%; height: 100%; background: #1a1d24; }
     .map-controls { position: absolute; top: 14px; right: 14px; display: flex; flex-direction: column; gap: 7px; z-index: 5; }
-    .ctrl-btn { width: 38px; height: 38px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; color: var(--text); cursor: pointer; display: grid; place-items: center; box-shadow: var(--shadow); }
-    .ctrl-btn:hover { background: var(--panel-2); }
-    .ctrl-btn svg { width: 17px; height: 17px; }
-    .layers-panel { position: absolute; top: 14px; right: 62px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; padding: 5px; box-shadow: var(--shadow); display: none; z-index: 5; min-width: 140px; }
+    .ctrl-btn { width: 38px; height: 38px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; color: var(--text); cursor: pointer; }
+    .layers-panel { position: absolute; top: 14px; right: 62px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; padding: 5px; display: none; z-index: 5; }
     .layers-panel.open { display: block; }
-    .layer-option { display: flex; align-items: center; gap: 7px; padding: 8px 9px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 500; }
-    .layer-option:hover { background: rgba(138,180,248,0.08); }
-    .layer-option.active { background: rgba(26,115,232,0.2); color: var(--accent); }
-    .layer-swatch { width: 15px; height: 15px; border-radius: 3px; border: 1px solid var(--border); }
-    .status-bar { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 11.5px; color: var(--muted); box-shadow: var(--shadow); z-index: 5; display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+    .layer-option { padding: 8px 9px; border-radius: 7px; cursor: pointer; font-size: 12px; }
+    .layer-option.active { color: var(--accent); }
+    .status-bar { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 11.5px; color: var(--muted); z-index: 5; display: flex; gap: 9px; }
     .status-bar .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--success); }
-    .toast { position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 10px 16px; border-radius: 11px; font-size: 12.5px; font-weight: 500; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 10; }
+    .toast { position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 10px 16px; border-radius: 11px; font-size: 12.5px; opacity: 0; transition: opacity 0.25s, transform 0.25s; z-index: 10; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    #screenShareBox { display: none; position: absolute; bottom: 64px; right: 14px; width: min(340px, 40vw); background: #000; border-radius: 11px; overflow: hidden; border: 2px solid var(--accent-strong); z-index: 8; box-shadow: var(--shadow); }
+    #screenShareBox { display: none; position: absolute; bottom: 64px; right: 14px; width: min(340px, 40vw); background: #000; border-radius: 11px; overflow: hidden; border: 2px solid var(--accent-strong); z-index: 8; }
     #screenShareBox.visible { display: block; }
-    #screenShareBox video { width: 100%; display: block; max-height: 220px; object-fit: contain; background: #111; }
-    #screenShareBox .ss-label { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.75); color: white; font-size: 10px; font-weight: 600; padding: 3px 7px; border-radius: 5px; }
-    .gm-style .gm-style-cc, .gm-bundled-control .gmnoprint { display: none !important; }
+    #screenShareBox video { width: 100%; max-height: 220px; }
     @media (max-width: 800px) {
       #app { grid-template-columns: 1fr; }
-      .sidebar { position: absolute; top: 0; left: 0; bottom: 0; width: min(330px, 92vw); transform: translateX(-100%); transition: transform 0.25s ease; z-index: 20; }
+      .sidebar { position: absolute; top: 0; left: 0; bottom: 0; width: min(330px, 92vw); transform: translateX(-100%); transition: transform 0.25s; z-index: 20; }
       .sidebar.open { transform: translateX(0); }
       .mobile-toggle { display: grid !important; }
     }
-    .mobile-toggle { display: none; position: absolute; top: 12px; left: 12px; z-index: 10; width: 38px; height: 38px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; color: var(--text); cursor: pointer; place-items: center; box-shadow: var(--shadow); }
+    .mobile-toggle { display: none; position: absolute; top: 12px; left: 12px; z-index: 10; width: 38px; height: 38px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; color: var(--text); cursor: pointer; place-items: center; }
   </style>
 </head>
 <body>
@@ -139,7 +109,7 @@
     <div class="welcome-card">
       <div class="welcome-logo">G</div>
       <h1>Welcome to Maps</h1>
-      <p>Email or Google login · live friend locations · voice &amp; 1080p screen share</p>
+      <p>Email or Google login · live friend locations · voice and screen share</p>
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="login" type="button">Log in</button>
         <button class="auth-tab" data-tab="register" type="button">Sign up</button>
@@ -148,7 +118,7 @@
         <label>Email</label>
         <input type="email" id="loginEmail" placeholder="you@email.com" required />
         <label>Password</label>
-        <input type="password" id="loginPass" placeholder="••••••••" required minlength="4" />
+        <input type="password" id="loginPass" placeholder="Password" required minlength="4" />
         <button type="submit" class="btn-primary">Log in with Email</button>
       </form>
       <form class="auth-form" id="formRegister">
@@ -163,28 +133,28 @@
       <div class="divider">or</div>
       <div class="welcome-actions">
         <button class="btn-google" id="btnGoogleLogin" type="button">Continue with Google</button>
-        <button class="btn-primary" id="btnAllowLocation" type="button">Allow Location &amp; Enter</button>
+        <button class="btn-primary" id="btnAllowLocation" type="button">Allow Location and Enter</button>
         <button class="btn-ghost" id="btnSkip" type="button">Continue as guest</button>
       </div>
-      <p class="welcome-note">Friend rooms use peer-to-peer WebRTC. Share a room code to connect.</p>
+      <p class="welcome-note">Share a room code to connect with friends.</p>
     </div>
   </div>
   <div id="app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="brand"><div class="brand-logo">G</div><h1>Maps</h1><span>Live</span></div>
+        <div class="brand"><div class="brand-logo">G</div><h1>Maps</h1></div>
         <div class="user-chip" id="userChip">
           <div class="user-avatar" id="userAvatar">?</div>
           <div class="user-meta"><div class="name" id="userName">Guest</div><div class="email" id="userEmail">Not signed in</div></div>
         </div>
         <div class="search-box">
-          <input type="text" id="searchInput" placeholder="Search places..." autocomplete="off" spellcheck="false" />
+          <input type="text" id="searchInput" placeholder="Search places..." autocomplete="off" />
           <button class="search-btn" id="searchBtn" type="button">Go</button>
           <div class="search-results" id="searchResults"></div>
         </div>
       </div>
       <div class="sidebar-body">
-        <div class="section-title">Friends &amp; Live Share</div>
+        <div class="section-title">Friends and Live Share</div>
         <div class="room-box">
           <div class="row">
             <input type="text" id="roomCode" placeholder="Room code" maxlength="64" />
@@ -216,7 +186,7 @@
     <div class="map-wrap">
       <button class="mobile-toggle" id="mobileToggle" type="button">Menu</button>
       <div id="map"></div>
-      <div id="screenShareBox"><span class="ss-label">Screen · 1080p</span><video id="remoteScreen" autoplay playsinline></video></div>
+      <div id="screenShareBox"><video id="remoteScreen" autoplay playsinline></video></div>
       <div class="map-controls">
         <button class="ctrl-btn" id="btnLayers" type="button">Layers</button>
         <button class="ctrl-btn" id="btnFullscreen" type="button">Full</button>
@@ -227,7 +197,7 @@
         <div class="layer-option" data-layer="hybrid">Hybrid</div>
         <div class="layer-option" data-layer="terrain">Terrain</div>
       </div>
-      <div class="status-bar"><span class="dot"></span><span id="statusCoords">—</span><span style="opacity:.4">|</span><span id="statusZoom">Zoom —</span></div>
+      <div class="status-bar"><span class="dot"></span><span id="statusCoords">—</span><span id="statusZoom">Zoom —</span></div>
       <div class="toast" id="toast"></div>
     </div>
   </div>
@@ -235,39 +205,7 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQXAhnouB23QWGRAchHsdg9XcVDn-fdUg&libraries=places&callback=initMap" async defer></script>
-  <script>
-    (function () {
-      function hideWelcome() {
-        var w = document.getElementById("welcome");
-        if (w) w.classList.add("hidden");
-        try { localStorage.setItem("maps_welcome_done", "1"); } catch (e) {}
-      }
-      function ready(fn) {
-        if (document.readyState !== "loading") fn();
-        else document.addEventListener("DOMContentLoaded", fn);
-      }
-      ready(function () {
-        var allow = document.getElementById("btnAllowLocation");
-        var skip = document.getElementById("btnSkip");
-        if (allow) allow.addEventListener("click", function () {
-          hideWelcome();
-          if (typeof requestLocation === "function") requestLocation(true);
-        });
-        if (skip) skip.addEventListener("click", hideWelcome);
-        document.querySelectorAll(".auth-tab").forEach(function (tab) {
-          tab.addEventListener("click", function () {
-            document.querySelectorAll(".auth-tab").forEach(function (t) { t.classList.remove("active"); });
-            document.querySelectorAll(".auth-form").forEach(function (f) { f.classList.remove("active"); });
-            tab.classList.add("active");
-            var form = tab.getAttribute("data-tab") === "login"
-              ? document.getElementById("formLogin")
-              : document.getElementById("formRegister");
-            if (form) form.classList.add("active");
-          });
-        });
-      });
-    })();
-  </script>
+  <script src="google-auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
