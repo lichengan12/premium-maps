@@ -26,10 +26,21 @@ function escapeHtml(str) {
     .replace(/"/g, String.fromCharCode(38) + "quot;");
 }
 function closeWelcome() {
-  var w = $("#welcome");
-  if (w) w.classList.add("hidden");
+  var w = document.getElementById("welcome");
+  if (w) {
+    w.classList.add("hidden");
+    w.style.display = "none";
+  }
   try { localStorage.setItem("maps_welcome_done", "1"); } catch (e) {}
 }
+
+(function () {
+  try {
+    if (localStorage.getItem("maps_welcome_done") === "1" || localStorage.getItem("maps_user")) {
+      closeWelcome();
+    }
+  } catch (e) {}
+})();
 
 function getAccounts() {
   try { return JSON.parse(localStorage.getItem("maps_accounts") || "{}"); } catch (e) { return {}; }
@@ -444,7 +455,7 @@ function initMap() {
   setTimeout(initPeer, 600);
   if (typeof initGoogleSignIn === "function") setTimeout(initGoogleSignIn, 400);
 
-  if (localStorage.getItem("maps_welcome_done") === "1") {
+  if (localStorage.getItem("maps_welcome_done") === "1" || localStorage.getItem("maps_user")) {
     closeWelcome();
     if (!myLocationMarker) setTimeout(function () { requestLocation(true); }, 700);
   }
@@ -704,3 +715,9 @@ if ($("#mobileToggle")) {
     if (s) s.classList.toggle("open");
   });
 }
+
+window.closeWelcome = closeWelcome;
+window.setUser = setUser;
+window.requestLocation = requestLocation;
+window.toast = toast;
+window.initMap = initMap;
