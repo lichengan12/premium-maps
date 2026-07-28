@@ -1,4 +1,4 @@
-// PREMIUM MAPS — Auth · Friends · Voice · Screen
+// PREMIUM MAPS
 const GOOGLE_CLIENT_ID = "213167991809-5e4dq56drdap064jmvdd7ptqqt42erie.apps.googleusercontent.com";
 
 let map, markers = [], dropMode = false, markerId = 0;
@@ -7,25 +7,29 @@ let myLocationMarker = null, accuracyCircle = null;
 let currentUser = null;
 let peer = null, myPeerId = null, roomPeers = {}, friendMarkers = {};
 let localStream = null, screenStream = null, currentCall = null, screenCall = null;
-let watchId = null, currentRoom = null;
+let watchId = null;
 
-const $ = (s) => document.querySelector(s);
-const welcome = $("#welcome");
-const searchInput = $("#searchInput");
-const searchResults = $("#searchResults");
-const markersList = $("#markersList");
-const statusCoords = $("#statusCoords");
-const statusZoom = $("#statusZoom");
-const toastEl = $("#toast");
-const layersPanel = $("#layersPanel");
-const sidebar = $("#sidebar");
-const userChip = $("#userChip");
-const friendsList = $("#friendsList");
-const callBar = $("#callBar");
-const roomStatus = $("#roomStatus");
-const remoteAudio = $("#remoteAudio");
-const remoteScreen = $("#remoteScreen");
-const screenShareBox = $("#screenShareBox");
+function $(s) { return document.querySelector(s); }
+function toast(msg) {
+  var el = $("#toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(el._t);
+  el._t = setTimeout(function () { el.classList.remove("show"); }, 2400);
+}
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, String.fromCharCode(38) + "amp;")
+    .replace(/</g, String.fromCharCode(38) + "lt;")
+    .replace(/>/g, String.fromCharCode(38) + "gt;")
+    .replace(/"/g, String.fromCharCode(38) + "quot;");
+}
+function closeWelcome() {
+  var w = $("#welcome");
+  if (w) w.classList.add("hidden");
+  try { localStorage.setItem("maps_welcome_done", "1"); } catch (e) {}
+}
 
 function getAccounts() {
   try { return JSON.parse(localStorage.getItem("maps_accounts") || "{}"); } catch (e) { return {}; }
@@ -33,119 +37,99 @@ function getAccounts() {
 function saveAccounts(a) { localStorage.setItem("maps_accounts", JSON.stringify(a)); }
 
 async function hashPass(p) {
-  const data = new TextEncoder().encode(p + "maps_salt_v1");
-  const buf = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-function toast(msg) {
-  if (!toastEl) return;
-  toastEl.textContent = msg;
-  toastEl.classList.add("show");
-  clearTimeout(toastEl._t);
-  toastEl._t = setTimeout(() => toastEl.classList.remove("show"), 2400);
-}
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&")
-    .replace(/</g, "<")
-    .replace(/>/g, ">")
-    .replace(/"/g, """);
-}
-function closeWelcome() {
-  if (welcome) welcome.classList.add("hidden");
-  try { localStorage.setItem("maps_welcome_done", "1"); } catch (e) {}
-}
-
-document.querySelectorAll(".auth-tab").forEach(tab => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".auth-form").forEach(f => f.classList.remove("active"));
-    tab.classList.add("active");
-    const form = tab.dataset.tab === "login" ? $("#formLogin") : $("#formRegister");
-    if (form) form.classList.add("active");
-  });
-});
-
-if ($("#formLogin")) $("#formLogin").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = $("#loginEmail").value.trim().toLowerCase();
-  const pass = $("#loginPass").value;
-  const accounts = getAccounts();
-  const acc = accounts[email];
-  if (!acc) return toast("No account with that email");
-  const h = await hashPass(pass);
-  if (h !== acc.pass) return toast("Wrong password");
-  setUser({ name: acc.name, email: email, picture: null, sub: "email:" + email });
-  closeWelcome();
-  requestLocation(true);
-  toast("Logged in as " + acc.name);
-});
-
-if ($("#formRegister")) $("#formRegister").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = $("#regName").value.trim();
-  const email = $("#regEmail").value.trim().toLowerCase();
-  const pass = $("#regPass").value;
-  if (pass.length < 4) return toast("Password too short");
-  const accounts = getAccounts();
-  if (accounts[email]) return toast("Email already registered");
-  accounts[email] = { name: name, pass: await hashPass(pass) };
-  saveAccounts(accounts);
-  setUser({ name: name, email: email, picture: null, sub: "email:" + email });
-  closeWelcome();
-  requestLocation(true);
-  toast("Account created");
-});
-
-if ($("#btnAllowLocation")) $("#btnAllowLocation").addEventListener("click", () => { closeWelcome(); requestLocation(true); });
-if ($("#btnSkip")) $("#btnSkip").addEventListener("click", () => {
-  closeWelcome();
-  setUser({ name: "Guest", email: "guest@local", picture: null, sub: "guest" });
-  toast("Continuing as guest");
-});
-if ($("#btnGoogleLogin")) $("#btnGoogleLogin").addEventListener("click", () => {
-  if (window.google && window.google.accounts && window.google.accounts.id) {
-    google.accounts.id.prompt();
-  } else toast("Google Sign-In still loading");
-});
-
-function initGoogleSignIn() {
-  if (!GOOGLE_CLIENT_ID || !window.google || !window.google.accounts || !window.google.accounts.id) return;
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: function (response) {
-      try {
-        const payload = JSON.parse(atob(response.credential.split(".")[1]));
-        setUser({ name: payload.name, email: payload.email, picture: payload.picture, sub: payload.sub });
-        closeWelcome();
-        requestLocation(true);
-        toast("Welcome, " + (payload.given_name || payload.name));
-      } catch (e) { toast("Google sign-in failed"); }
-    },
-    auto_select: false
-  });
+  var data = new TextEncoder().encode(p + "maps_salt_v1");
+  var buf = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(buf)).map(function (b) {
+    return b.toString(16).padStart(2, "0");
+  }).join("");
 }
 
 function setUser(user) {
   currentUser = user;
   try { localStorage.setItem("maps_user", JSON.stringify(user)); } catch (e) {}
-  if (userChip) userChip.classList.add("visible");
+  var chip = $("#userChip");
+  if (chip) chip.classList.add("visible");
   if ($("#userName")) $("#userName").textContent = user.name;
   if ($("#userEmail")) $("#userEmail").textContent = user.email;
-  const av = $("#userAvatar");
+  var av = $("#userAvatar");
   if (av) {
-    if (user.picture) av.innerHTML = '<img src="' + user.picture + '" alt="" referrerpolicy="no-referrer" />';
-    else av.textContent = (user.name || "?").charAt(0).toUpperCase();
+    if (user.picture) {
+      av.innerHTML = "";
+      var img = document.createElement("img");
+      img.src = user.picture;
+      img.referrerPolicy = "no-referrer";
+      av.appendChild(img);
+    } else {
+      av.textContent = (user.name || "?").charAt(0).toUpperCase();
+    }
   }
-  initPeer();
+  if (typeof initPeer === "function") initPeer();
 }
 
 function loadUser() {
   try {
-    const raw = localStorage.getItem("maps_user");
+    var raw = localStorage.getItem("maps_user");
     if (raw) setUser(JSON.parse(raw));
   } catch (e) {}
+}
+
+document.querySelectorAll(".auth-tab").forEach(function (tab) {
+  tab.addEventListener("click", function () {
+    document.querySelectorAll(".auth-tab").forEach(function (t) { t.classList.remove("active"); });
+    document.querySelectorAll(".auth-form").forEach(function (f) { f.classList.remove("active"); });
+    tab.classList.add("active");
+    var form = tab.getAttribute("data-tab") === "login" ? $("#formLogin") : $("#formRegister");
+    if (form) form.classList.add("active");
+  });
+});
+
+if ($("#formLogin")) {
+  $("#formLogin").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var email = $("#loginEmail").value.trim().toLowerCase();
+    var pass = $("#loginPass").value;
+    var accounts = getAccounts();
+    var acc = accounts[email];
+    if (!acc) return toast("No account with that email");
+    var h = await hashPass(pass);
+    if (h !== acc.pass) return toast("Wrong password");
+    setUser({ name: acc.name, email: email, picture: null, sub: "email:" + email });
+    closeWelcome();
+    requestLocation(true);
+    toast("Logged in as " + acc.name);
+  });
+}
+
+if ($("#formRegister")) {
+  $("#formRegister").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var name = $("#regName").value.trim();
+    var email = $("#regEmail").value.trim().toLowerCase();
+    var pass = $("#regPass").value;
+    if (pass.length < 4) return toast("Password too short");
+    var accounts = getAccounts();
+    if (accounts[email]) return toast("Email already registered");
+    accounts[email] = { name: name, pass: await hashPass(pass) };
+    saveAccounts(accounts);
+    setUser({ name: name, email: email, picture: null, sub: "email:" + email });
+    closeWelcome();
+    requestLocation(true);
+    toast("Account created");
+  });
+}
+
+if ($("#btnAllowLocation")) {
+  $("#btnAllowLocation").addEventListener("click", function () {
+    closeWelcome();
+    requestLocation(true);
+  });
+}
+if ($("#btnSkip")) {
+  $("#btnSkip").addEventListener("click", function () {
+    closeWelcome();
+    setUser({ name: "Guest", email: "guest@local", picture: null, sub: "guest" });
+    toast("Continuing as guest");
+  });
 }
 
 function requestLocation(centerMap) {
@@ -154,8 +138,7 @@ function requestLocation(centerMap) {
   toast("Getting your location");
   navigator.geolocation.getCurrentPosition(
     function (pos) {
-      const lat = pos.coords.latitude, lng = pos.coords.longitude, accuracy = pos.coords.accuracy;
-      showMyLocation(lat, lng, accuracy, centerMap);
+      showMyLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, centerMap);
       startLocationWatch();
       toast("Location found");
     },
@@ -186,22 +169,44 @@ function showMyLocation(lat, lng, accuracy, center) {
   if (myLocationMarker) myLocationMarker.setMap(null);
   if (accuracyCircle) accuracyCircle.setMap(null);
   myLocationMarker = new google.maps.Marker({
-    position: { lat: lat, lng: lng }, map: map, title: "You are here", zIndex: 999,
-    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "#fff", strokeWeight: 3 }
+    position: { lat: lat, lng: lng },
+    map: map,
+    title: "You are here",
+    zIndex: 999,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 9,
+      fillColor: "#4285F4",
+      fillOpacity: 1,
+      strokeColor: "#ffffff",
+      strokeWeight: 3
+    }
   });
   accuracyCircle = new google.maps.Circle({
-    map: map, center: { lat: lat, lng: lng }, radius: Math.min(accuracy, 250),
-    fillColor: "#4285F4", fillOpacity: 0.12, strokeColor: "#4285F4", strokeOpacity: 0.3, strokeWeight: 1
+    map: map,
+    center: { lat: lat, lng: lng },
+    radius: Math.min(accuracy, 250),
+    fillColor: "#4285F4",
+    fillOpacity: 0.12,
+    strokeColor: "#4285F4",
+    strokeOpacity: 0.3,
+    strokeWeight: 1
   });
   markers = markers.filter(function (m) { return !m.isMe; });
   markerId += 1;
-  const info = new google.maps.InfoWindow({
-    content: "<div style=\"font-family:Inter,sans-serif;padding:3px\"><strong>You are here</strong><br><span style=\"color:#5f6368;font-size:12px\">" + lat.toFixed(5) + ", " + lng.toFixed(5) + "</span></div>"
+  var info = new google.maps.InfoWindow({
+    content: "<div style='font-family:Inter,sans-serif;padding:3px'><strong>You are here</strong></div>"
   });
   myLocationMarker.addListener("click", function () { info.open(map, myLocationMarker); });
-  markers.unshift({ id: markerId, lat: lat, lng: lng, title: "You are here", marker: myLocationMarker, info: info, isMe: true });
+  markers.unshift({
+    id: markerId, lat: lat, lng: lng, title: "You are here",
+    marker: myLocationMarker, info: info, isMe: true
+  });
   renderMarkersList();
-  if (center) { map.panTo({ lat: lat, lng: lng }); if (map.getZoom() < 15) map.setZoom(16); }
+  if (center) {
+    map.panTo({ lat: lat, lng: lng });
+    if (map.getZoom() < 15) map.setZoom(16);
+  }
 }
 
 function initPeer() {
@@ -211,75 +216,46 @@ function initPeer() {
   peer.on("open", function (id) { myPeerId = id; });
   peer.on("connection", function (conn) { setupDataConn(conn); });
   peer.on("call", function (call) {
-    const meta = call.metadata || {};
+    var meta = call.metadata || {};
     if (meta.type === "screen") {
       call.answer();
       call.on("stream", function (stream) {
-        if (remoteScreen) remoteScreen.srcObject = stream;
-        if (screenShareBox) screenShareBox.classList.add("visible");
+        var v = $("#remoteScreen");
+        if (v) v.srcObject = stream;
+        var box = $("#screenShareBox");
+        if (box) box.classList.add("visible");
         toast("Friend is sharing screen");
       });
       screenCall = call;
     } else {
       call.answer(localStream || undefined);
       call.on("stream", function (stream) {
-        if (remoteAudio) remoteAudio.srcObject = stream;
-        if ($("#btnVoice")) $("#btnVoice").classList.add("on");
-        if (callBar) callBar.classList.add("visible");
+        var a = $("#remoteAudio");
+        if (a) a.srcObject = stream;
         toast("Voice connected");
       });
       currentCall = call;
     }
   });
-  peer.on("error", function (err) {
-    console.warn("Peer error", err);
-  });
 }
 
-if ($("#btnCreateRoom")) $("#btnCreateRoom").addEventListener("click", function () {
-  if (!peer || !myPeerId) { initPeer(); return toast("Connecting, try again"); }
-  currentRoom = myPeerId;
-  if ($("#roomCode")) $("#roomCode").value = myPeerId;
-  setRoomLive(true, "Hosting room — share this code");
-  if (callBar) callBar.classList.add("visible");
-  toast("Room created");
-});
-
-if ($("#btnJoinRoom")) $("#btnJoinRoom").addEventListener("click", function () {
-  const code = ($("#roomCode") && $("#roomCode").value.trim()) || "";
-  if (!code) return toast("Enter a room code");
-  if (!peer || !myPeerId) { initPeer(); return toast("Connecting, try again"); }
-  if (code === myPeerId) return toast("That is your own code");
-  currentRoom = code;
-  const conn = peer.connect(code, { reliable: true, metadata: { name: (currentUser && currentUser.name) || "Friend" } });
-  setupDataConn(conn);
-  setRoomLive(true, "Joining room");
-  if (callBar) callBar.classList.add("visible");
-});
-
-if ($("#btnCopyRoom")) $("#btnCopyRoom").addEventListener("click", function () {
-  const code = (($("#roomCode") && $("#roomCode").value.trim()) || myPeerId) || "";
-  if (!code) return toast("Create or join a room first");
-  if (navigator.clipboard) navigator.clipboard.writeText(code).then(function () { toast("Room code copied"); }).catch(function () { toast(code); });
-  else toast(code);
-});
-
 function setRoomLive(live, text) {
-  if (!roomStatus) return;
-  roomStatus.classList.toggle("live", live);
-  roomStatus.innerHTML = '<span class="dot"></span> ' + text;
+  var el = $("#roomStatus");
+  if (!el) return;
+  el.classList.toggle("live", live);
+  el.innerHTML = '<span class="dot"></span> ' + text;
 }
 
 function setupDataConn(conn) {
   conn.on("open", function () {
     roomPeers[conn.peer] = conn;
-    const name = (conn.metadata && conn.metadata.name) || "Friend";
+    var name = (conn.metadata && conn.metadata.name) || "Friend";
     addFriendUI(conn.peer, name, true);
-    setRoomLive(true, "Connected · live sharing");
+    setRoomLive(true, "Connected");
     toast("Connected to " + name);
     conn.send({ type: "hello", name: (currentUser && currentUser.name) || "Friend" });
     if (myLocationMarker) {
-      const p = myLocationMarker.getPosition();
+      var p = myLocationMarker.getPosition();
       conn.send({ type: "loc", lat: p.lat(), lng: p.lng(), name: (currentUser && currentUser.name) || "Friend" });
     }
   });
@@ -290,30 +266,35 @@ function setupDataConn(conn) {
   });
   conn.on("close", function () {
     delete roomPeers[conn.peer];
-    addFriendUI(conn.peer, "Friend", false);
-    if (friendMarkers[conn.peer]) { friendMarkers[conn.peer].setMap(null); delete friendMarkers[conn.peer]; }
+    if (friendMarkers[conn.peer]) {
+      friendMarkers[conn.peer].setMap(null);
+      delete friendMarkers[conn.peer];
+    }
     if (Object.keys(roomPeers).length === 0) setRoomLive(false, "Not in a room");
   });
 }
 
 function broadcastLocation(lat, lng) {
-  const payload = { type: "loc", lat: lat, lng: lng, name: (currentUser && currentUser.name) || "Friend" };
+  var payload = { type: "loc", lat: lat, lng: lng, name: (currentUser && currentUser.name) || "Friend" };
   Object.keys(roomPeers).forEach(function (k) {
-    const c = roomPeers[k];
+    var c = roomPeers[k];
     if (c && c.open) c.send(payload);
   });
 }
 
 function addFriendUI(peerId, name, online) {
-  if (!friendsList) return;
-  let el = friendsList.querySelector('[data-peer="' + peerId + '"]');
+  var list = $("#friendsList");
+  if (!list) return;
+  var el = list.querySelector('[data-peer="' + peerId + '"]');
   if (!el) {
     el = document.createElement("div");
     el.className = "friend-card";
     el.setAttribute("data-peer", peerId);
-    friendsList.appendChild(el);
+    list.appendChild(el);
   }
-  el.innerHTML = '<div class="friend-avatar ' + (online ? "online" : "") + '">' + (name || "?").charAt(0).toUpperCase() + '</div><div class="friend-info"><div class="fname">' + escapeHtml(name) + '</div><div class="fmeta">' + (online ? "Online · sharing location" : "Offline") + '</div></div>';
+  el.innerHTML = '<div class="friend-avatar">' + (name || "?").charAt(0).toUpperCase() +
+    '</div><div class="friend-info"><div class="fname">' + escapeHtml(name) +
+    '</div><div class="fmeta">' + (online ? "Online" : "Offline") + "</div></div>";
 }
 
 function updateFriendMarker(peerId, lat, lng, name) {
@@ -321,64 +302,112 @@ function updateFriendMarker(peerId, lat, lng, name) {
   if (friendMarkers[peerId]) {
     friendMarkers[peerId].setPosition({ lat: lat, lng: lng });
   } else {
-    const m = new google.maps.Marker({
-      position: { lat: lat, lng: lng }, map: map, title: name, zIndex: 900,
-      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9, fillColor: "#f9ab00", fillOpacity: 1, strokeColor: "#fff", strokeWeight: 3 }
+    friendMarkers[peerId] = new google.maps.Marker({
+      position: { lat: lat, lng: lng },
+      map: map,
+      title: name,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 9,
+        fillColor: "#f9ab00",
+        fillOpacity: 1,
+        strokeColor: "#ffffff",
+        strokeWeight: 3
+      }
     });
-    friendMarkers[peerId] = m;
   }
-  let fm = markers.find(function (x) { return x.friendId === peerId; });
-  if (!fm) {
-    markerId += 1;
-    markers.push({ id: markerId, lat: lat, lng: lng, title: name + " (live)", marker: friendMarkers[peerId], info: null, isMe: false, friendId: peerId });
-  } else { fm.lat = lat; fm.lng = lng; }
   renderMarkersList();
-  addFriendUI(peerId, name, true);
 }
 
-if ($("#btnVoice")) $("#btnVoice").addEventListener("click", async function () {
-  const peers = Object.keys(roomPeers);
-  if (!peers.length) return toast("Join or create a room first");
-  try {
-    if (!localStream) localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    currentCall = peer.call(peers[0], localStream, { metadata: { type: "voice" } });
-    currentCall.on("stream", function (stream) { if (remoteAudio) remoteAudio.srcObject = stream; toast("Voice connected"); });
-    $("#btnVoice").classList.add("on");
-    toast("Calling");
-  } catch (e) { toast("Microphone permission denied"); }
-});
-
-if ($("#btnScreen")) $("#btnScreen").addEventListener("click", async function () {
-  const peers = Object.keys(roomPeers);
-  if (!peers.length) return toast("Join or create a room first");
-  try {
-    screenStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
-      audio: false
+if ($("#btnCreateRoom")) {
+  $("#btnCreateRoom").addEventListener("click", function () {
+    if (!peer || !myPeerId) { initPeer(); return toast("Connecting, try again"); }
+    if ($("#roomCode")) $("#roomCode").value = myPeerId;
+    setRoomLive(true, "Hosting room");
+    var bar = $("#callBar");
+    if (bar) bar.classList.add("visible");
+    toast("Room created — copy the code");
+  });
+}
+if ($("#btnJoinRoom")) {
+  $("#btnJoinRoom").addEventListener("click", function () {
+    var code = ($("#roomCode") && $("#roomCode").value.trim()) || "";
+    if (!code) return toast("Enter a room code");
+    if (!peer || !myPeerId) { initPeer(); return toast("Connecting, try again"); }
+    if (code === myPeerId) return toast("That is your own code");
+    var conn = peer.connect(code, {
+      reliable: true,
+      metadata: { name: (currentUser && currentUser.name) || "Friend" }
     });
-    screenCall = peer.call(peers[0], screenStream, { metadata: { type: "screen" } });
-    $("#btnScreen").classList.add("on");
-    toast("Sharing screen 1080p");
-    screenStream.getVideoTracks()[0].onended = function () { stopScreen(); };
-  } catch (e) { toast("Screen share cancelled"); }
-});
-
-function stopScreen() {
-  if (screenStream) { screenStream.getTracks().forEach(function (t) { t.stop(); }); screenStream = null; }
-  if (screenCall) { try { screenCall.close(); } catch (e) {} screenCall = null; }
-  if ($("#btnScreen")) $("#btnScreen").classList.remove("on");
-  if (screenShareBox) screenShareBox.classList.remove("visible");
-  if (remoteScreen) remoteScreen.srcObject = null;
+    setupDataConn(conn);
+    setRoomLive(true, "Joining");
+    var bar = $("#callBar");
+    if (bar) bar.classList.add("visible");
+  });
+}
+if ($("#btnCopyRoom")) {
+  $("#btnCopyRoom").addEventListener("click", function () {
+    var code = (($("#roomCode") && $("#roomCode").value.trim()) || myPeerId) || "";
+    if (!code) return toast("Create or join a room first");
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(function () { toast("Code copied"); });
+    } else toast(code);
+  });
 }
 
-if ($("#btnHangup")) $("#btnHangup").addEventListener("click", function () {
-  if (currentCall) { try { currentCall.close(); } catch (e) {} currentCall = null; }
-  stopScreen();
-  if (localStream) { localStream.getTracks().forEach(function (t) { t.stop(); }); localStream = null; }
-  if (remoteAudio) remoteAudio.srcObject = null;
-  if ($("#btnVoice")) $("#btnVoice").classList.remove("on");
-  toast("Call ended");
-});
+if ($("#btnVoice")) {
+  $("#btnVoice").addEventListener("click", async function () {
+    var peers = Object.keys(roomPeers);
+    if (!peers.length) return toast("Join a room first");
+    try {
+      if (!localStream) localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      currentCall = peer.call(peers[0], localStream, { metadata: { type: "voice" } });
+      currentCall.on("stream", function (stream) {
+        var a = $("#remoteAudio");
+        if (a) a.srcObject = stream;
+        toast("Voice connected");
+      });
+      toast("Calling");
+    } catch (e) { toast("Mic denied"); }
+  });
+}
+if ($("#btnScreen")) {
+  $("#btnScreen").addEventListener("click", async function () {
+    var peers = Object.keys(roomPeers);
+    if (!peers.length) return toast("Join a room first");
+    try {
+      screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
+      });
+      screenCall = peer.call(peers[0], screenStream, { metadata: { type: "screen" } });
+      toast("Sharing screen");
+      screenStream.getVideoTracks()[0].onended = function () { stopScreen(); };
+    } catch (e) { toast("Screen share cancelled"); }
+  });
+}
+function stopScreen() {
+  if (screenStream) {
+    screenStream.getTracks().forEach(function (t) { t.stop(); });
+    screenStream = null;
+  }
+  if (screenCall) { try { screenCall.close(); } catch (e) {} screenCall = null; }
+  var box = $("#screenShareBox");
+  if (box) box.classList.remove("visible");
+  var v = $("#remoteScreen");
+  if (v) v.srcObject = null;
+}
+if ($("#btnHangup")) {
+  $("#btnHangup").addEventListener("click", function () {
+    if (currentCall) { try { currentCall.close(); } catch (e) {} currentCall = null; }
+    stopScreen();
+    if (localStream) {
+      localStream.getTracks().forEach(function (t) { t.stop(); });
+      localStream = null;
+    }
+    toast("Call ended");
+  });
+}
 
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
@@ -394,7 +423,9 @@ function initMap() {
   autocompleteService = new google.maps.places.AutocompleteService();
 
   map.addListener("mousemove", function (e) {
-    if (e.latLng && statusCoords) statusCoords.textContent = e.latLng.lat().toFixed(5) + ", " + e.latLng.lng().toFixed(5);
+    if (e.latLng && $("#statusCoords")) {
+      $("#statusCoords").textContent = e.latLng.lat().toFixed(5) + ", " + e.latLng.lng().toFixed(5);
+    }
   });
   map.addListener("zoom_changed", updateStatus);
   map.addListener("center_changed", updateStatus);
@@ -406,15 +437,12 @@ function initMap() {
       toast("Pin dropped");
     }
   });
-  map.addListener("dblclick", function (e) {
-    if (e.latLng) addMarker(e.latLng.lat(), e.latLng.lng(), "Quick Pin");
-  });
 
   updateStatus();
   loadUser();
   loadSavedMarkers();
-  setTimeout(initGoogleSignIn, 400);
   setTimeout(initPeer, 600);
+  if (typeof initGoogleSignIn === "function") setTimeout(initGoogleSignIn, 400);
 
   if (localStorage.getItem("maps_welcome_done") === "1") {
     closeWelcome();
@@ -425,39 +453,44 @@ window.initMap = initMap;
 
 function updateStatus() {
   if (!map) return;
-  const c = map.getCenter();
-  if (statusCoords) statusCoords.textContent = c.lat().toFixed(5) + ", " + c.lng().toFixed(5);
-  if (statusZoom) statusZoom.textContent = "Zoom " + map.getZoom();
+  var c = map.getCenter();
+  if ($("#statusCoords")) $("#statusCoords").textContent = c.lat().toFixed(5) + ", " + c.lng().toFixed(5);
+  if ($("#statusZoom")) $("#statusZoom").textContent = "Zoom " + map.getZoom();
 }
 
 function addMarker(lat, lng, title, fly) {
   if (title === undefined) title = "Place";
   if (fly === undefined) fly = true;
   markerId += 1;
-  const id = markerId;
-  const marker = new google.maps.Marker({
-    position: { lat: lat, lng: lng }, map: map, title: title,
+  var id = markerId;
+  var marker = new google.maps.Marker({
+    position: { lat: lat, lng: lng },
+    map: map,
+    title: title,
     label: { text: String(id), color: "white", fontWeight: "700", fontSize: "11px" },
-    animation: google.maps.Animation.DROP, draggable: true
+    animation: google.maps.Animation.DROP,
+    draggable: true
   });
-  const info = new google.maps.InfoWindow({
-    content: "<div style=\"font-family:Inter,sans-serif;padding:3px\"><strong>" + escapeHtml(title) + "</strong><br><span style=\"color:#5f6368;font-size:12px\">" + lat.toFixed(5) + ", " + lng.toFixed(5) + "</span></div>"
+  var info = new google.maps.InfoWindow({
+    content: "<div style='font-family:Inter,sans-serif;padding:3px'><strong>" + escapeHtml(title) + "</strong></div>"
   });
   marker.addListener("click", function () { info.open(map, marker); });
   marker.addListener("dragend", function () {
-    const pos = marker.getPosition();
-    const m = markers.find(function (x) { return x.id === id; });
+    var pos = marker.getPosition();
+    var m = markers.find(function (x) { return x.id === id; });
     if (m) { m.lat = pos.lat(); m.lng = pos.lng(); renderMarkersList(); persistMarkers(); }
   });
   markers.push({ id: id, lat: lat, lng: lng, title: title, marker: marker, info: info, isMe: false });
   renderMarkersList();
   persistMarkers();
-  if (fly) { map.panTo({ lat: lat, lng: lng }); if (map.getZoom() < 15) map.setZoom(15); }
-  return id;
+  if (fly) {
+    map.panTo({ lat: lat, lng: lng });
+    if (map.getZoom() < 15) map.setZoom(15);
+  }
 }
 
 function removeMarker(id) {
-  const idx = markers.findIndex(function (m) { return m.id === id; });
+  var idx = markers.findIndex(function (m) { return m.id === id; });
   if (idx === -1) return;
   markers[idx].marker.setMap(null);
   if (markers[idx].isMe) {
@@ -480,28 +513,41 @@ function clearAllMarkers() {
 }
 
 function renderMarkersList() {
-  if (!markersList) return;
+  var list = $("#markersList");
+  if (!list) return;
   if (!markers.length) {
-    markersList.innerHTML = '<div class="empty-state">Search or drop a pin</div>';
+    list.innerHTML = '<div class="empty-state">Search or drop a pin</div>';
     return;
   }
-  markersList.innerHTML = markers.map(function (m) {
-    return '<div class="marker-card" data-id="' + m.id + '"><div class="marker-pin ' + (m.isMe ? "me" : "") + (m.friendId ? " friend" : "") + '">' + (m.isMe ? "•" : (m.friendId ? (m.title || "F").charAt(0) : m.id)) + '</div><div class="marker-info"><div class="title">' + escapeHtml(m.title) + '</div><div class="coords">' + m.lat.toFixed(5) + ", " + m.lng.toFixed(5) + '</div></div>' + (m.friendId ? "" : '<button class="marker-remove" data-remove="' + m.id + '" type="button">×</button>') + '</div>';
+  list.innerHTML = markers.map(function (m) {
+    return '<div class="marker-card" data-id="' + m.id + '">' +
+      '<div class="marker-pin' + (m.isMe ? " me" : "") + '">' + (m.isMe ? "*" : m.id) + "</div>" +
+      '<div class="marker-info"><div class="title">' + escapeHtml(m.title) + "</div>" +
+      '<div class="coords">' + m.lat.toFixed(5) + ", " + m.lng.toFixed(5) + "</div></div>" +
+      (m.friendId ? "" : '<button class="marker-remove" data-remove="' + m.id + '" type="button">x</button>') +
+      "</div>";
   }).join("");
-  markersList.querySelectorAll(".marker-card").forEach(function (card) {
+  list.querySelectorAll(".marker-card").forEach(function (card) {
     card.addEventListener("click", function (e) {
       if (e.target.closest("[data-remove]")) return;
-      const m = markers.find(function (x) { return x.id === +card.getAttribute("data-id"); });
-      if (m) { map.panTo({ lat: m.lat, lng: m.lng }); map.setZoom(16); if (m.info) m.info.open(map, m.marker); }
+      var m = markers.find(function (x) { return x.id === +card.getAttribute("data-id"); });
+      if (m) {
+        map.panTo({ lat: m.lat, lng: m.lng });
+        map.setZoom(16);
+        if (m.info) m.info.open(map, m.marker);
+      }
     });
   });
-  markersList.querySelectorAll("[data-remove]").forEach(function (btn) {
-    btn.addEventListener("click", function (e) { e.stopPropagation(); removeMarker(+btn.getAttribute("data-remove")); });
+  list.querySelectorAll("[data-remove]").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      removeMarker(+btn.getAttribute("data-remove"));
+    });
   });
 }
 
 function persistMarkers() {
-  const data = markers.filter(function (m) { return !m.isMe && !m.friendId; }).map(function (m) {
+  var data = markers.filter(function (m) { return !m.isMe && !m.friendId; }).map(function (m) {
     return { id: m.id, lat: m.lat, lng: m.lng, title: m.title };
   });
   try {
@@ -512,18 +558,20 @@ function persistMarkers() {
 
 function loadSavedMarkers() {
   try {
-    const savedId = localStorage.getItem("maps_marker_id");
+    var savedId = localStorage.getItem("maps_marker_id");
     if (savedId) markerId = parseInt(savedId, 10) || 0;
-    const raw = localStorage.getItem("maps_markers");
+    var raw = localStorage.getItem("maps_markers");
     if (!raw) return;
     JSON.parse(raw).forEach(function (m) {
-      const marker = new google.maps.Marker({
-        position: { lat: m.lat, lng: m.lng }, map: map, title: m.title,
+      var marker = new google.maps.Marker({
+        position: { lat: m.lat, lng: m.lng },
+        map: map,
+        title: m.title,
         label: { text: String(m.id), color: "white", fontWeight: "700", fontSize: "11px" },
         draggable: true
       });
-      const info = new google.maps.InfoWindow({
-        content: "<div style=\"font-family:Inter,sans-serif;padding:3px\"><strong>" + escapeHtml(m.title) + "</strong></div>"
+      var info = new google.maps.InfoWindow({
+        content: "<div style='font-family:Inter,sans-serif;padding:3px'><strong>" + escapeHtml(m.title) + "</strong></div>"
       });
       marker.addListener("click", function () { info.open(map, marker); });
       markers.push({ id: m.id, lat: m.lat, lng: m.lng, title: m.title, marker: marker, info: info, isMe: false });
@@ -532,33 +580,39 @@ function loadSavedMarkers() {
   } catch (e) {}
 }
 
-let searchTimeout = null;
+var searchTimeout = null;
 function searchPlaces(query) {
-  if (!query || query.length < 2) { if (searchResults) searchResults.classList.remove("open"); return; }
+  var results = $("#searchResults");
+  if (!query || query.length < 2) {
+    if (results) results.classList.remove("open");
+    return;
+  }
   if (!autocompleteService) return;
   autocompleteService.getPlacePredictions(
     { input: query, types: ["geocode", "establishment"] },
     function (predictions, status) {
       if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
-        if (searchResults) {
-          searchResults.innerHTML = '<div class="result-item"><div class="name">No results</div></div>';
-          searchResults.classList.add("open");
+        if (results) {
+          results.innerHTML = '<div class="result-item"><div class="name">No results</div></div>';
+          results.classList.add("open");
         }
         return;
       }
-      searchResults.innerHTML = predictions.slice(0, 6).map(function (p) {
-        return '<div class="result-item" data-place-id="' + p.place_id + '" data-name="' + escapeHtml(p.structured_formatting.main_text) + '"><div class="name">' + escapeHtml(p.structured_formatting.main_text) + '</div><div class="addr">' + escapeHtml(p.description) + '</div></div>';
+      results.innerHTML = predictions.slice(0, 6).map(function (p) {
+        return '<div class="result-item" data-place-id="' + p.place_id + '">' +
+          '<div class="name">' + escapeHtml(p.structured_formatting.main_text) + "</div>" +
+          '<div class="addr">' + escapeHtml(p.description) + "</div></div>";
       }).join("");
-      searchResults.classList.add("open");
-      searchResults.querySelectorAll(".result-item").forEach(function (el) {
+      results.classList.add("open");
+      results.querySelectorAll(".result-item").forEach(function (el) {
         el.addEventListener("click", function () {
           placesService.getDetails(
             { placeId: el.getAttribute("data-place-id"), fields: ["geometry", "name"] },
             function (place, st) {
               if (st === google.maps.places.PlacesServiceStatus.OK && place.geometry) {
-                addMarker(place.geometry.location.lat(), place.geometry.location.lng(), place.name || el.getAttribute("data-name"));
-                searchResults.classList.remove("open");
-                if (searchInput) searchInput.value = place.name || el.getAttribute("data-name");
+                addMarker(place.geometry.location.lat(), place.geometry.location.lng(), place.name || "Place");
+                results.classList.remove("open");
+                if ($("#searchInput")) $("#searchInput").value = place.name || "";
               }
             }
           );
@@ -570,11 +624,13 @@ function searchPlaces(query) {
 
 function copyCenter() {
   if (!map) return;
-  const c = map.getCenter();
-  const text = c.lat().toFixed(6) + ", " + c.lng().toFixed(6);
-  if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { toast("Coordinates copied"); }).catch(function () { toast(text); });
-  else toast(text);
+  var c = map.getCenter();
+  var text = c.lat().toFixed(6) + ", " + c.lng().toFixed(6);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function () { toast("Copied"); });
+  } else toast(text);
 }
+
 function setMapType(type) {
   if (!map) return;
   map.setMapTypeId(type);
@@ -583,49 +639,68 @@ function setMapType(type) {
   });
 }
 
+var searchInput = $("#searchInput");
 if (searchInput) {
   searchInput.addEventListener("input", function () {
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(function () { searchPlaces(searchInput.value.trim()); }, 280);
+    searchTimeout = setTimeout(function () {
+      searchPlaces(searchInput.value.trim());
+    }, 280);
   });
   searchInput.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") { e.preventDefault(); searchPlaces(searchInput.value.trim()); }
-    if (e.key === "Escape" && searchResults) searchResults.classList.remove("open");
+    if (e.key === "Enter") {
+      e.preventDefault();
+      searchPlaces(searchInput.value.trim());
+    }
   });
 }
-if ($("#searchBtn")) $("#searchBtn").addEventListener("click", function () { searchPlaces(searchInput.value.trim()); });
-document.addEventListener("click", function (e) {
-  if (!e.target.closest(".search-box") && searchResults) searchResults.classList.remove("open");
-});
+if ($("#searchBtn")) {
+  $("#searchBtn").addEventListener("click", function () {
+    searchPlaces(searchInput.value.trim());
+  });
+}
 if ($("#btnLocate")) $("#btnLocate").addEventListener("click", function () { requestLocation(true); });
-if ($("#btnDropPin")) $("#btnDropPin").addEventListener("click", function () {
-  dropMode = !dropMode;
-  $("#btnDropPin").classList.toggle("active", dropMode);
-  toast(dropMode ? "Click map to drop pin" : "Drop mode off");
-});
+if ($("#btnDropPin")) {
+  $("#btnDropPin").addEventListener("click", function () {
+    dropMode = !dropMode;
+    $("#btnDropPin").classList.toggle("active", dropMode);
+    toast(dropMode ? "Click map to drop pin" : "Drop mode off");
+  });
+}
 if ($("#btnClear")) $("#btnClear").addEventListener("click", clearAllMarkers);
 if ($("#btnCopy")) $("#btnCopy").addEventListener("click", copyCenter);
-if ($("#btnLayers")) $("#btnLayers").addEventListener("click", function (e) {
-  e.stopPropagation();
-  if (layersPanel) layersPanel.classList.toggle("open");
-});
+if ($("#btnLayers")) {
+  $("#btnLayers").addEventListener("click", function (e) {
+    e.stopPropagation();
+    var p = $("#layersPanel");
+    if (p) p.classList.toggle("open");
+  });
+}
 document.addEventListener("click", function (e) {
-  if (!e.target.closest("#layersPanel") && !e.target.closest("#btnLayers") && layersPanel) layersPanel.classList.remove("open");
+  if (!e.target.closest("#layersPanel") && !e.target.closest("#btnLayers")) {
+    var p = $("#layersPanel");
+    if (p) p.classList.remove("open");
+  }
 });
 document.querySelectorAll(".layer-option").forEach(function (el) {
   el.addEventListener("click", function () {
     setMapType(el.getAttribute("data-layer"));
-    if (layersPanel) layersPanel.classList.remove("open");
+    var p = $("#layersPanel");
+    if (p) p.classList.remove("open");
   });
 });
-if ($("#btnFullscreen")) $("#btnFullscreen").addEventListener("click", function () {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
-  else document.exitFullscreen && document.exitFullscreen();
-});
-if ($("#mobileToggle")) $("#mobileToggle").addEventListener("click", function () {
-  if (sidebar) sidebar.classList.toggle("open");
-});
-var mapEl = document.getElementById("map");
-if (mapEl) mapEl.addEventListener("click", function () {
-  if (window.innerWidth <= 800 && sidebar) sidebar.classList.remove("open");
-});
+if ($("#btnFullscreen")) {
+  $("#btnFullscreen").addEventListener("click", function () {
+    if (!document.fullscreenElement) {
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  });
+}
+if ($("#mobileToggle")) {
+  $("#mobileToggle").addEventListener("click", function () {
+    var s = $("#sidebar");
+    if (s) s.classList.toggle("open");
+  });
+}
