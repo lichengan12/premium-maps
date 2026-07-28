@@ -166,7 +166,7 @@
         <button class="btn-primary" id="btnAllowLocation" type="button">Allow Location &amp; Enter</button>
         <button class="btn-ghost" id="btnSkip" type="button">Continue as guest</button>
       </div>
-      <p class="welcome-note">Friend rooms use peer-to-peer WebRTC (voice + screen). Share a room code to connect.</p>
+      <p class="welcome-note">Friend rooms use peer-to-peer WebRTC. Share a room code to connect.</p>
     </div>
   </div>
   <div id="app">
@@ -235,6 +235,39 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQXAhnouB23QWGRAchHsdg9XcVDn-fdUg&libraries=places&callback=initMap" async defer></script>
+  <script>
+    (function () {
+      function hideWelcome() {
+        var w = document.getElementById("welcome");
+        if (w) w.classList.add("hidden");
+        try { localStorage.setItem("maps_welcome_done", "1"); } catch (e) {}
+      }
+      function ready(fn) {
+        if (document.readyState !== "loading") fn();
+        else document.addEventListener("DOMContentLoaded", fn);
+      }
+      ready(function () {
+        var allow = document.getElementById("btnAllowLocation");
+        var skip = document.getElementById("btnSkip");
+        if (allow) allow.addEventListener("click", function () {
+          hideWelcome();
+          if (typeof requestLocation === "function") requestLocation(true);
+        });
+        if (skip) skip.addEventListener("click", hideWelcome);
+        document.querySelectorAll(".auth-tab").forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            document.querySelectorAll(".auth-tab").forEach(function (t) { t.classList.remove("active"); });
+            document.querySelectorAll(".auth-form").forEach(function (f) { f.classList.remove("active"); });
+            tab.classList.add("active");
+            var form = tab.getAttribute("data-tab") === "login"
+              ? document.getElementById("formLogin")
+              : document.getElementById("formRegister");
+            if (form) form.classList.add("active");
+          });
+        });
+      });
+    })();
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
