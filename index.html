@@ -1,211 +1,932 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Maps — Premium</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0f1115; --panel: #181b22; --panel-2: #1f2430; --border: #2a303c;
-      --text: #e8eaed; --muted: #9aa0a6; --accent: #8ab4f8; --accent-strong: #1a73e8;
-      --success: #81c995; --danger: #f28b82; --shadow: 0 8px 32px rgba(0,0,0,0.45);
-      --font: "Inter", system-ui, -apple-system, sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); overflow: hidden; }
-    #app { display: grid; grid-template-columns: 380px 1fr; height: 100%; }
-    #welcome { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(ellipse at 30% 20%, #1a2a4a 0%, var(--bg) 60%); display: flex; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.4s, visibility 0.4s; }
-    #welcome.hidden { opacity: 0; visibility: hidden; pointer-events: none; display: none !important; }
-    .welcome-card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 32px 28px; max-width: 420px; width: 100%; box-shadow: var(--shadow); text-align: center; }
-    .welcome-logo { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #1a73e8, #8ab4f8); display: grid; place-items: center; font-weight: 700; font-size: 24px; color: white; margin: 0 auto 14px; }
-    .welcome-card h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-    .welcome-card > p { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
-    .auth-tabs { display: flex; gap: 4px; background: var(--panel-2); border-radius: 10px; padding: 4px; margin-bottom: 14px; }
-    .auth-tab { flex: 1; border: none; background: transparent; color: var(--muted); padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
-    .auth-tab.active { background: var(--accent-strong); color: white; }
-    .auth-form { display: none; flex-direction: column; gap: 8px; text-align: left; }
-    .auth-form.active { display: flex; }
-    .auth-form label { font-size: 11.5px; color: var(--muted); }
-    .auth-form input { width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; color: var(--text); font-size: 13.5px; font-family: inherit; outline: none; }
-    .btn-primary { background: var(--accent-strong); color: white; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; }
-    .btn-google { background: white; color: #3c4043; border: none; border-radius: 12px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; }
-    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; font-size: 12.5px; font-family: inherit; cursor: pointer; width: 100%; }
-    .divider { display: flex; align-items: center; gap: 12px; margin: 12px 0; color: var(--muted); font-size: 11.5px; }
-    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-    .welcome-actions { display: flex; flex-direction: column; gap: 8px; }
-    .welcome-note { margin-top: 14px; font-size: 11px; color: var(--muted); }
-    .sidebar { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .sidebar-header { padding: 14px; border-bottom: 1px solid var(--border); }
-    .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .brand-logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #1a73e8, #8ab4f8); display: grid; place-items: center; font-weight: 700; font-size: 12px; color: white; }
-    .brand h1 { font-size: 16px; }
-    .user-chip { display: none; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; padding: 7px 9px; margin-bottom: 10px; }
-    .user-chip.visible { display: flex; }
-    .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-strong); display: grid; place-items: center; font-weight: 700; font-size: 11px; color: white; overflow: hidden; }
-    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .user-meta .name { font-size: 12.5px; font-weight: 600; }
-    .user-meta .email { font-size: 10.5px; color: var(--muted); }
-    .search-box { position: relative; }
-    .search-box input { width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; padding: 10px 40px 10px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; }
-    .search-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border: none; border-radius: 8px; background: var(--accent-strong); color: white; cursor: pointer; }
-    .search-results { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; max-height: 220px; overflow-y: auto; display: none; z-index: 50; }
-    .search-results.open { display: block; }
-    .result-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
-    .result-item .name { font-size: 12.5px; font-weight: 500; }
-    .result-item .addr { font-size: 11px; color: var(--muted); }
-    .sidebar-body { flex: 1; overflow-y: auto; padding: 12px; }
-    .section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
-    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-    .action-btn { background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 9px; color: var(--text); font-size: 11.5px; font-weight: 500; cursor: pointer; font-family: inherit; }
-    .action-btn.active { border-color: var(--accent-strong); color: var(--accent); }
-    .room-box { background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; padding: 10px; margin-bottom: 12px; }
-    .room-box .row { display: flex; gap: 6px; margin-bottom: 7px; }
-    .room-box input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 12.5px; font-family: inherit; }
-    .room-status { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-    .room-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
-    .room-status.live .dot { background: var(--success); }
-    .friends-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-    .call-bar { display: none; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-    .call-bar.visible { display: flex; }
-    .call-btn { flex: 1; border: 1px solid var(--border); border-radius: 9px; padding: 8px 6px; background: var(--panel-2); color: var(--text); font-size: 11px; font-weight: 600; font-family: inherit; cursor: pointer; }
-    .call-btn.on { border-color: var(--accent-strong); color: var(--accent); }
-    .call-btn.hangup { border-color: var(--danger); color: var(--danger); }
-    .markers-list { display: flex; flex-direction: column; gap: 5px; }
-    .marker-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; display: flex; gap: 8px; cursor: pointer; }
-    .marker-pin { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-strong); display: grid; place-items: center; font-size: 10px; font-weight: 700; color: white; }
-    .marker-pin.me { background: #34a853; }
-    .marker-info .title { font-size: 12.5px; font-weight: 600; }
-    .marker-info .coords { font-size: 10.5px; color: var(--muted); }
-    .empty-state { text-align: center; padding: 20px 10px; color: var(--muted); font-size: 12px; }
-    .map-wrap { position: relative; height: 100%; }
-    #map { width: 100%; height: 100%; background: #1a1d24; }
-    .map-controls { position: absolute; top: 14px; right: 14px; display: flex; flex-direction: column; gap: 7px; z-index: 5; }
-    .ctrl-btn { width: 38px; height: 38px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; color: var(--text); cursor: pointer; }
-    .layers-panel { position: absolute; top: 14px; right: 62px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; padding: 5px; display: none; z-index: 5; }
-    .layers-panel.open { display: block; }
-    .layer-option { padding: 8px 9px; border-radius: 7px; cursor: pointer; font-size: 12px; }
-    .layer-option.active { color: var(--accent); }
-    .status-bar { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 11.5px; color: var(--muted); z-index: 5; display: flex; gap: 9px; }
-    .status-bar .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--success); }
-    .toast { position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 10px 16px; border-radius: 11px; font-size: 12.5px; opacity: 0; transition: opacity 0.25s, transform 0.25s; z-index: 10; }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    #screenShareBox { display: none; position: absolute; bottom: 64px; right: 14px; width: min(340px, 40vw); background: #000; border-radius: 11px; overflow: hidden; border: 2px solid var(--accent-strong); z-index: 8; }
-    #screenShareBox.visible { display: block; }
-    #screenShareBox video { width: 100%; max-height: 220px; }
-    @media (max-width: 800px) {
-      #app { grid-template-columns: 1fr; }
-      .sidebar { position: absolute; top: 0; left: 0; bottom: 0; width: min(330px, 92vw); transform: translateX(-100%); transition: transform 0.25s; z-index: 20; }
-      .sidebar.open { transform: translateX(0); }
-      .mobile-toggle { display: grid !important; }
-    }
-    .mobile-toggle { display: none; position: absolute; top: 12px; left: 12px; z-index: 10; width: 38px; height: 38px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; color: var(--text); cursor: pointer; place-items: center; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Maps — Premium</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg:#0f1115; --panel:#181b22; --panel2:#1f2430; --border:#2a303c;
+  --text:#e8eaed; --muted:#9aa0a6; --accent:#8ab4f8; --blue:#1a73e8;
+  --green:#81c995; --red:#f28b82; --font:"Inter",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden}
+#app{display:grid;grid-template-columns:360px 1fr;height:100%}
+#welcome{position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at 30% 20%,#1a2a4a 0%,var(--bg) 60%);
+  display:flex;align-items:center;justify-content:center;padding:24px}
+#welcome.hide{display:none!important}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:32px 28px;max-width:400px;width:100%;text-align:center}
+.logo{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#1a73e8,#8ab4f8);display:grid;place-items:center;
+  font-weight:700;font-size:24px;color:#fff;margin:0 auto 14px}
+.card h1{font-size:22px;margin-bottom:6px}
+.card>p{color:var(--muted);font-size:13px;margin-bottom:16px}
+.tabs{display:flex;gap:4px;background:var(--panel2);border-radius:10px;padding:4px;margin-bottom:14px}
+.tab{flex:1;border:none;background:transparent;color:var(--muted);padding:9px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+.tab.on{background:var(--blue);color:#fff}
+.form{display:none;flex-direction:column;gap:8px;text-align:left}
+.form.on{display:flex}
+.form label{font-size:11px;color:var(--muted)}
+.form input{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.btn{border:none;border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;width:100%}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-white{background:#fff;color:#3c4043}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.divider{display:flex;align-items:center;gap:12px;margin:12px 0;color:var(--muted);font-size:11px}
+.divider:before,.divider:after{content:"";flex:1;height:1px;background:var(--border)}
+.actions{display:flex;flex-direction:column;gap:8px}
+.note{margin-top:14px;font-size:11px;color:var(--muted)}
+.sidebar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sh{padding:14px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.brand .l{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#1a73e8,#8ab4f8);display:grid;place-items:center;font-weight:700;font-size:12px;color:#fff}
+.brand h1{font-size:16px}
+.chip{display:none;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:7px 9px;margin-bottom:10px}
+.chip.show{display:flex}
+.av{width:30px;height:30px;border-radius:50%;background:var(--blue);display:grid;place-items:center;font-weight:700;font-size:11px;color:#fff;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.meta .n{font-size:12px;font-weight:600}
+.meta .e{font-size:10px;color:var(--muted)}
+.search{position:relative}
+.search input{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:10px 40px 10px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.search button{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:12px}
+.results{position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--panel2);border:1px solid var(--border);border-radius:11px;max-height:220px;overflow-y:auto;display:none;z-index:50}
+.results.open{display:block}
+.ri{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border)}
+.ri .nm{font-size:12px;font-weight:500}
+.ri .ad{font-size:11px;color:var(--muted)}
+.sb{flex:1;overflow-y:auto;padding:12px}
+.st{font-size:10px;font-weight:600;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+.ab{background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:9px;color:var(--text);font-size:11px;font-weight:500;cursor:pointer;font-family:inherit}
+.ab.on{border-color:var(--blue);color:var(--accent)}
+.room{background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:10px;margin-bottom:12px}
+.room .row{display:flex;gap:6px;margin-bottom:7px}
+.room input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:12px;font-family:inherit}
+.room .btn-sm{padding:8px 12px;font-size:12px;width:auto;border-radius:8px}
+.rs{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.rs .d{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.rs.live .d{background:var(--green)}
+.fl{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.cb{display:none;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.cb.show{display:flex}
+.cbutton{flex:1;border:1px solid var(--border);border-radius:9px;padding:8px 6px;background:var(--panel2);color:var(--text);font-size:11px;font-weight:600;font-family:inherit;cursor:pointer}
+.cbutton.hang{border-color:var(--red);color:var(--red)}
+.ml{display:flex;flex-direction:column;gap:5px}
+.mc{background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:9px 10px;display:flex;gap:8px;cursor:pointer;align-items:center}
+.mp{width:24px;height:24px;border-radius:50%;background:var(--blue);display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.mp.me{background:#34a853}
+.mi .t{font-size:12px;font-weight:600}
+.mi .c{font-size:10px;color:var(--muted)}
+.es{text-align:center;padding:20px 10px;color:var(--muted);font-size:12px}
+.mw{position:relative;height:100%}
+#map{width:100%;height:100%;background:#1a1d24}
+.mc2{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:7px;z-index:5}
+.cb2{width:38px;height:38px;background:var(--panel);border:1px solid var(--border);border-radius:11px;color:var(--text);cursor:pointer;font-size:11px}
+.lp{position:absolute;top:14px;right:62px;background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:5px;display:none;z-index:5}
+.lp.open{display:block}
+.lo{padding:8px 9px;border-radius:7px;cursor:pointer;font-size:12px}
+.lo.on{color:var(--accent)}
+.bar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-size:11px;color:var(--muted);z-index:5;display:flex;gap:9px;align-items:center}
+.bar .d{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.toast{position:absolute;bottom:64px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--panel);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:11px;font-size:12px;opacity:0;transition:opacity .25s,transform .25s;z-index:10;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#ssb{display:none;position:absolute;bottom:64px;right:14px;width:min(340px,40vw);background:#000;border-radius:11px;overflow:hidden;border:2px solid var(--blue);z-index:8}
+#ssb.show{display:block}
+#ssb video{width:100%;max-height:220px}
+.mtog{display:none;position:absolute;top:12px;left:12px;z-index:10;width:38px;height:38px;background:var(--panel);border:1px solid var(--border);border-radius:11px;color:var(--text);cursor:pointer;place-items:center;font-size:11px}
+@media(max-width:800px){
+  #app{grid-template-columns:1fr}
+  .sidebar{position:absolute;top:0;left:0;bottom:0;width:min(330px,92vw);transform:translateX(-100%);transition:transform .25s;z-index:20}
+  .sidebar.open{transform:translateX(0)}
+  .mtog{display:grid}
+}
+</style>
 </head>
 <body>
-  <div id="welcome">
-    <div class="welcome-card">
-      <div class="welcome-logo">G</div>
-      <h1>Welcome to Maps</h1>
-      <p>Email or Google login · live friend locations · voice and screen share</p>
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login" type="button">Log in</button>
-        <button class="auth-tab" data-tab="register" type="button">Sign up</button>
-      </div>
-      <form class="auth-form active" id="formLogin">
-        <label>Email</label>
-        <input type="email" id="loginEmail" placeholder="you@email.com" required />
-        <label>Password</label>
-        <input type="password" id="loginPass" placeholder="Password" required minlength="4" />
-        <button type="submit" class="btn-primary">Log in with Email</button>
-      </form>
-      <form class="auth-form" id="formRegister">
-        <label>Name</label>
-        <input type="text" id="regName" placeholder="Your name" required />
-        <label>Email</label>
-        <input type="email" id="regEmail" placeholder="you@email.com" required />
-        <label>Password</label>
-        <input type="password" id="regPass" placeholder="Min 4 characters" required minlength="4" />
-        <button type="submit" class="btn-primary">Create account</button>
-      </form>
-      <div class="divider">or</div>
-      <div class="welcome-actions">
-        <button class="btn-google" id="btnGoogleLogin" type="button">Continue with Google</button>
-        <button class="btn-primary" id="btnAllowLocation" type="button">Allow Location and Enter</button>
-        <button class="btn-ghost" id="btnSkip" type="button">Continue as guest</button>
-      </div>
-      <p class="welcome-note">Share a room code to connect with friends.</p>
+<div id="welcome">
+  <div class="card">
+    <div class="logo">G</div>
+    <h1>Welcome to Maps</h1>
+    <p>Email or Google login · live friends · voice &amp; screen</p>
+    <div class="tabs">
+      <button class="tab on" data-tab="login" type="button">Log in</button>
+      <button class="tab" data-tab="register" type="button">Sign up</button>
     </div>
-  </div>
-  <div id="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="brand"><div class="brand-logo">G</div><h1>Maps</h1></div>
-        <div class="user-chip" id="userChip">
-          <div class="user-avatar" id="userAvatar">?</div>
-          <div class="user-meta"><div class="name" id="userName">Guest</div><div class="email" id="userEmail">Not signed in</div></div>
-        </div>
-        <div class="search-box">
-          <input type="text" id="searchInput" placeholder="Search places..." autocomplete="off" />
-          <button class="search-btn" id="searchBtn" type="button">Go</button>
-          <div class="search-results" id="searchResults"></div>
-        </div>
-      </div>
-      <div class="sidebar-body">
-        <div class="section-title">Friends and Live Share</div>
-        <div class="room-box">
-          <div class="row">
-            <input type="text" id="roomCode" placeholder="Room code" maxlength="64" />
-            <button class="btn-primary" id="btnJoinRoom" type="button" style="padding:8px 12px;font-size:12px;width:auto">Join</button>
-          </div>
-          <div class="row">
-            <button class="btn-ghost" id="btnCreateRoom" type="button" style="flex:1">Create room</button>
-            <button class="btn-ghost" id="btnCopyRoom" type="button" style="flex:1">Copy code</button>
-          </div>
-          <div class="room-status" id="roomStatus"><span class="dot"></span> Not in a room</div>
-        </div>
-        <div class="friends-list" id="friendsList"></div>
-        <div class="call-bar" id="callBar">
-          <button class="call-btn" id="btnVoice" type="button">Voice</button>
-          <button class="call-btn" id="btnScreen" type="button">Screen</button>
-          <button class="call-btn hangup" id="btnHangup" type="button">End</button>
-        </div>
-        <div class="section-title">Quick Actions</div>
-        <div class="quick-actions">
-          <button class="action-btn" id="btnLocate" type="button">My Location</button>
-          <button class="action-btn" id="btnDropPin" type="button">Drop Pin</button>
-          <button class="action-btn" id="btnClear" type="button">Clear</button>
-          <button class="action-btn" id="btnCopy" type="button">Copy</button>
-        </div>
-        <div class="section-title">Saved Places</div>
-        <div class="markers-list" id="markersList"><div class="empty-state">Search or drop a pin</div></div>
-      </div>
-    </aside>
-    <div class="map-wrap">
-      <button class="mobile-toggle" id="mobileToggle" type="button">Menu</button>
-      <div id="map"></div>
-      <div id="screenShareBox"><video id="remoteScreen" autoplay playsinline></video></div>
-      <div class="map-controls">
-        <button class="ctrl-btn" id="btnLayers" type="button">Layers</button>
-        <button class="ctrl-btn" id="btnFullscreen" type="button">Full</button>
-      </div>
-      <div class="layers-panel" id="layersPanel">
-        <div class="layer-option" data-layer="roadmap">Roadmap</div>
-        <div class="layer-option active" data-layer="satellite">Satellite</div>
-        <div class="layer-option" data-layer="hybrid">Hybrid</div>
-        <div class="layer-option" data-layer="terrain">Terrain</div>
-      </div>
-      <div class="status-bar"><span class="dot"></span><span id="statusCoords">—</span><span id="statusZoom">Zoom —</span></div>
-      <div class="toast" id="toast"></div>
+    <form class="form on" id="formLogin">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@email.com" required />
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Password" required minlength="4" />
+      <button type="submit" class="btn btn-blue">Log in with Email</button>
+    </form>
+    <form class="form" id="formRegister">
+      <label>Name</label>
+      <input type="text" id="regName" placeholder="Your name" required />
+      <label>Email</label>
+      <input type="email" id="regEmail" placeholder="you@email.com" required />
+      <label>Password</label>
+      <input type="password" id="regPass" placeholder="Min 4 characters" required minlength="4" />
+      <button type="submit" class="btn btn-blue">Create account</button>
+    </form>
+    <div class="divider">or</div>
+    <div class="actions">
+      <button class="btn btn-white" id="btnGoogle" type="button">Continue with Google</button>
+      <button class="btn btn-blue" id="btnAllow" type="button">Allow Location and Enter</button>
+      <button class="btn btn-ghost" id="btnSkip" type="button">Continue as guest</button>
     </div>
+    <p class="note">Share a room code to connect with friends.</p>
   </div>
-  <audio id="remoteAudio" autoplay></audio>
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="google-auth.js"></script>
-  <script src="app.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQXAhnouB23QWGRAchHsdg9XcVDn-fdUg&libraries=places&callback=initMap&loading=async" async defer></script>
+</div>
+
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sh">
+      <div class="brand"><div class="l">G</div><h1>Maps</h1></div>
+      <div class="chip" id="chip">
+        <div class="av" id="av">?</div>
+        <div class="meta"><div class="n" id="uName">Guest</div><div class="e" id="uEmail">Not signed in</div></div>
+      </div>
+      <div class="search">
+        <input type="text" id="q" placeholder="Search places..." autocomplete="off" />
+        <button id="qBtn" type="button">Go</button>
+        <div class="results" id="results"></div>
+      </div>
+    </div>
+    <div class="sb">
+      <div class="st">Friends &amp; Live Share</div>
+      <div class="room">
+        <div class="row">
+          <input type="text" id="roomCode" placeholder="Room code" maxlength="64" />
+          <button class="btn btn-blue btn-sm" id="btnJoin" type="button">Join</button>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost" id="btnCreate" type="button" style="flex:1">Create room</button>
+          <button class="btn btn-ghost" id="btnCopyRoom" type="button" style="flex:1">Copy code</button>
+        </div>
+        <div class="rs" id="roomStatus"><span class="d"></span> Not in a room</div>
+      </div>
+      <div class="fl" id="friends"></div>
+      <div class="cb" id="callBar">
+        <button class="cbutton" id="btnVoice" type="button">Voice</button>
+        <button class="cbutton" id="btnScreen" type="button">Screen</button>
+        <button class="cbutton hang" id="btnHang" type="button">End</button>
+      </div>
+      <div class="st">Quick Actions</div>
+      <div class="qa">
+        <button class="ab" id="btnLocate" type="button">My Location</button>
+        <button class="ab" id="btnDrop" type="button">Drop Pin</button>
+        <button class="ab" id="btnClear" type="button">Clear</button>
+        <button class="ab" id="btnCopy" type="button">Copy Coords</button>
+      </div>
+      <div class="st">Saved Places</div>
+      <div class="ml" id="markers"><div class="es">Search or drop a pin</div></div>
+    </div>
+  </aside>
+  <div class="mw">
+    <button class="mtog" id="menuBtn" type="button">Menu</button>
+    <div id="map"></div>
+    <div id="ssb"><video id="remoteScreen" autoplay playsinline></video></div>
+    <div class="mc2">
+      <button class="cb2" id="btnLayers" type="button">Layers</button>
+      <button class="cb2" id="btnFull" type="button">Full</button>
+    </div>
+    <div class="lp" id="layers">
+      <div class="lo" data-layer="roadmap">Roadmap</div>
+      <div class="lo on" data-layer="satellite">Satellite</div>
+      <div class="lo" data-layer="hybrid">Hybrid</div>
+      <div class="lo" data-layer="terrain">Terrain</div>
+    </div>
+    <div class="bar"><span class="d"></span><span id="coords">—</span><span id="zoom">Zoom —</span></div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+<audio id="remoteAudio" autoplay></audio>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var CLIENT_ID = "213167991809-5e4dq56drdap064jmvdd7ptqqt42erie.apps.googleusercontent.com";
+  var map = null, markers = [], dropMode = false, markerId = 0;
+  var placesService = null, autocompleteService = null;
+  var myMarker = null, accuracyCircle = null, currentUser = null;
+  var peer = null, myPeerId = null, roomPeers = {}, friendMarkers = {};
+  var localStream = null, screenStream = null, currentCall = null, screenCall = null;
+  var watchId = null, searchTimeout = null, googleTokenClient = null;
+
+  function $(id) { return document.getElementById(id); }
+  function toast(msg) {
+    var el = $("toast");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove("show"); }, 2400);
+  }
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "\u0026amp;")
+      .replace(/</g, "\u0026lt;")
+      .replace(/>/g, "\u0026gt;")
+      .replace(/"/g, "\u0026quot;");
+  }
+  function closeWelcome() {
+    var w = $("welcome");
+    if (w) w.classList.add("hide");
+    try { localStorage.setItem("maps_welcome_done", "1"); } catch (e) {}
+  }
+  function restoreSession() {
+    try {
+      if (localStorage.getItem("maps_welcome_done") === "1" || localStorage.getItem("maps_user")) {
+        closeWelcome();
+      }
+    } catch (e) {}
+  }
+  restoreSession();
+
+  function getAccounts() {
+    try { return JSON.parse(localStorage.getItem("maps_accounts") || "{}"); } catch (e) { return {}; }
+  }
+  function saveAccounts(a) {
+    try { localStorage.setItem("maps_accounts", JSON.stringify(a)); } catch (e) {}
+  }
+  function hashPass(p) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(p + "maps_salt_v1")).then(function (buf) {
+      return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+    });
+  }
+
+  function setUser(user) {
+    currentUser = user;
+    try { localStorage.setItem("maps_user", JSON.stringify(user)); } catch (e) {}
+    var chip = $("chip");
+    if (chip) chip.classList.add("show");
+    if ($("uName")) $("uName").textContent = user.name || "User";
+    if ($("uEmail")) $("uEmail").textContent = user.email || "";
+    var av = $("av");
+    if (av) {
+      if (user.picture) {
+        av.innerHTML = "";
+        var img = document.createElement("img");
+        img.src = user.picture;
+        img.referrerPolicy = "no-referrer";
+        av.appendChild(img);
+      } else {
+        av.textContent = (user.name || "?").charAt(0).toUpperCase();
+      }
+    }
+    initPeer();
+  }
+  function loadUser() {
+    try {
+      var raw = localStorage.getItem("maps_user");
+      if (raw) setUser(JSON.parse(raw));
+    } catch (e) {}
+  }
+
+  document.querySelectorAll(".tab").forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("on"); });
+      document.querySelectorAll(".form").forEach(function (f) { f.classList.remove("on"); });
+      tab.classList.add("on");
+      var f = tab.getAttribute("data-tab") === "login" ? $("formLogin") : $("formRegister");
+      if (f) f.classList.add("on");
+    });
+  });
+
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = $("loginEmail").value.trim().toLowerCase();
+    var pass = $("loginPass").value;
+    var accounts = getAccounts();
+    var acc = accounts[email];
+    if (!acc) return toast("No account with that email");
+    hashPass(pass).then(function (h) {
+      if (h !== acc.pass) return toast("Wrong password");
+      setUser({ name: acc.name, email: email, picture: null, sub: "email:" + email });
+      closeWelcome();
+      requestLocation(true);
+      toast("Logged in as " + acc.name);
+    });
+  });
+
+  $("formRegister").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = $("regName").value.trim();
+    var email = $("regEmail").value.trim().toLowerCase();
+    var pass = $("regPass").value;
+    if (pass.length < 4) return toast("Password too short");
+    var accounts = getAccounts();
+    if (accounts[email]) return toast("Email already registered");
+    hashPass(pass).then(function (h) {
+      accounts[email] = { name: name, pass: h };
+      saveAccounts(accounts);
+      setUser({ name: name, email: email, picture: null, sub: "email:" + email });
+      closeWelcome();
+      requestLocation(true);
+      toast("Account created");
+    });
+  });
+
+  $("btnAllow").addEventListener("click", function () {
+    closeWelcome();
+    requestLocation(true);
+  });
+  $("btnSkip").addEventListener("click", function () {
+    closeWelcome();
+    setUser({ name: "Guest", email: "guest@local", picture: null, sub: "guest" });
+    toast("Continuing as guest");
+  });
+
+  function saveGoogleUser(user) {
+    try { localStorage.setItem("maps_user", JSON.stringify(user)); } catch (e) {}
+    try { localStorage.setItem("maps_welcome_done", "1"); } catch (e) {}
+    closeWelcome();
+    setUser(user);
+    requestLocation(true);
+    toast("Welcome, " + (user.name || "Google user"));
+  }
+  function handleCredential(credential) {
+    try {
+      var parts = credential.split(".");
+      var b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+      while (b64.length % 4) b64 += "=";
+      var payload = JSON.parse(atob(b64));
+      saveGoogleUser({
+        name: payload.name || payload.email,
+        email: payload.email,
+        picture: payload.picture || null,
+        sub: payload.sub
+      });
+    } catch (e) {
+      console.error(e);
+      toast("Google sign-in failed");
+    }
+  }
+  function handleToken(token) {
+    fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: "Bearer " + token }
+    }).then(function (r) {
+      if (!r.ok) throw new Error("userinfo");
+      return r.json();
+    }).then(function (p) {
+      saveGoogleUser({
+        name: p.name || p.email,
+        email: p.email,
+        picture: p.picture || null,
+        sub: p.sub
+      });
+    }).catch(function (e) {
+      console.error(e);
+      toast("Google sign-in failed");
+    });
+  }
+  function initGoogle() {
+    if (!window.google || !google.accounts) return false;
+    if (google.accounts.id) {
+      google.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        callback: function (resp) {
+          if (resp && resp.credential) handleCredential(resp.credential);
+        },
+        auto_select: false
+      });
+    }
+    if (google.accounts.oauth2) {
+      googleTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: "openid email profile",
+        callback: function (tr) {
+          if (tr && tr.access_token) handleToken(tr.access_token);
+          else if (tr && tr.error) toast("Google login cancelled");
+        }
+      });
+    }
+    return true;
+  }
+  $("btnGoogle").addEventListener("click", function () {
+    if (!window.google || !google.accounts) {
+      toast("Google still loading — try again in 2s");
+      return;
+    }
+    if (!googleTokenClient) initGoogle();
+    if (googleTokenClient) {
+      googleTokenClient.requestAccessToken({ prompt: "" });
+      return;
+    }
+    if (google.accounts.id) {
+      google.accounts.id.prompt(function (n) {
+        if (n.isNotDisplayed() || n.isSkippedMoment()) {
+          toast("Add https://lichengan12.github.io to OAuth JavaScript origins");
+        }
+      });
+    }
+  });
+  var gisTries = 0;
+  var gisTimer = setInterval(function () {
+    gisTries++;
+    if (window.google && google.accounts) {
+      initGoogle();
+      clearInterval(gisTimer);
+    }
+    if (gisTries > 50) clearInterval(gisTimer);
+  }, 200);
+
+  function requestLocation(center) {
+    if (!navigator.geolocation) return toast("Geolocation not supported");
+    toast("Getting your location…");
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        showMyLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, center);
+        startWatch();
+        toast("Location found");
+      },
+      function (err) {
+        toast(err.code === 1 ? "Location permission denied" : "Could not get location");
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 }
+    );
+  }
+  function startWatch() {
+    if (watchId != null) return;
+    watchId = navigator.geolocation.watchPosition(
+      function (pos) {
+        showMyLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, false);
+        broadcastLoc(pos.coords.latitude, pos.coords.longitude);
+      },
+      function () {},
+      { enableHighAccuracy: true, maximumAge: 5000 }
+    );
+  }
+  function showMyLocation(lat, lng, accuracy, center) {
+    if (!map || !window.google || !google.maps) return;
+    if (myMarker) myMarker.setMap(null);
+    if (accuracyCircle) accuracyCircle.setMap(null);
+    myMarker = new google.maps.Marker({
+      position: { lat: lat, lng: lng },
+      map: map,
+      title: "You are here",
+      zIndex: 999,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 9,
+        fillColor: "#4285F4",
+        fillOpacity: 1,
+        strokeColor: "#ffffff",
+        strokeWeight: 3
+      }
+    });
+    accuracyCircle = new google.maps.Circle({
+      map: map,
+      center: { lat: lat, lng: lng },
+      radius: Math.min(accuracy || 50, 250),
+      fillColor: "#4285F4",
+      fillOpacity: 0.12,
+      strokeColor: "#4285F4",
+      strokeOpacity: 0.3,
+      strokeWeight: 1
+    });
+    markers = markers.filter(function (m) { return !m.isMe; });
+    markerId += 1;
+    markers.unshift({ id: markerId, lat: lat, lng: lng, title: "You are here", marker: myMarker, isMe: true });
+    renderMarkers();
+    if (center) {
+      map.panTo({ lat: lat, lng: lng });
+      if (map.getZoom() < 15) map.setZoom(16);
+    }
+  }
+
+  function initPeer() {
+    if (typeof Peer === "undefined") { setTimeout(initPeer, 400); return; }
+    if (peer) return;
+    peer = new Peer(undefined, { debug: 0 });
+    peer.on("open", function (id) { myPeerId = id; });
+    peer.on("connection", function (conn) { setupConn(conn); });
+    peer.on("call", function (call) {
+      var meta = call.metadata || {};
+      if (meta.type === "screen") {
+        call.answer();
+        call.on("stream", function (stream) {
+          var v = $("remoteScreen");
+          if (v) v.srcObject = stream;
+          var box = $("ssb");
+          if (box) box.classList.add("show");
+          toast("Friend is sharing screen");
+        });
+        screenCall = call;
+      } else {
+        call.answer(localStream || undefined);
+        call.on("stream", function (stream) {
+          var a = $("remoteAudio");
+          if (a) a.srcObject = stream;
+          toast("Voice connected");
+        });
+        currentCall = call;
+      }
+    });
+  }
+  function setRoomLive(live, text) {
+    var el = $("roomStatus");
+    if (!el) return;
+    el.classList.toggle("live", live);
+    el.innerHTML = '<span class="d"></span> ' + text;
+  }
+  function setupConn(conn) {
+    conn.on("open", function () {
+      roomPeers[conn.peer] = conn;
+      var name = (conn.metadata && conn.metadata.name) || "Friend";
+      addFriend(conn.peer, name, true);
+      setRoomLive(true, "Connected");
+      toast("Connected to " + name);
+      conn.send({ type: "hello", name: (currentUser && currentUser.name) || "Friend" });
+      if (myMarker) {
+        var p = myMarker.getPosition();
+        conn.send({ type: "loc", lat: p.lat(), lng: p.lng(), name: (currentUser && currentUser.name) || "Friend" });
+      }
+    });
+    conn.on("data", function (data) {
+      if (!data || !data.type) return;
+      if (data.type === "hello") addFriend(conn.peer, data.name || "Friend", true);
+      if (data.type === "loc") updateFriend(conn.peer, data.lat, data.lng, data.name || "Friend");
+    });
+    conn.on("close", function () {
+      delete roomPeers[conn.peer];
+      if (friendMarkers[conn.peer]) {
+        friendMarkers[conn.peer].setMap(null);
+        delete friendMarkers[conn.peer];
+      }
+      if (Object.keys(roomPeers).length === 0) setRoomLive(false, "Not in a room");
+    });
+  }
+  function broadcastLoc(lat, lng) {
+    var payload = { type: "loc", lat: lat, lng: lng, name: (currentUser && currentUser.name) || "Friend" };
+    Object.keys(roomPeers).forEach(function (k) {
+      var c = roomPeers[k];
+      if (c && c.open) c.send(payload);
+    });
+  }
+  function addFriend(peerId, name, online) {
+    var list = $("friends");
+    if (!list) return;
+    var el = list.querySelector('[data-peer="' + peerId + '"]');
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "mc";
+      el.setAttribute("data-peer", peerId);
+      list.appendChild(el);
+    }
+    el.innerHTML = '<div class="mp">' + (name || "?").charAt(0).toUpperCase() +
+      '</div><div class="mi"><div class="t">' + esc(name) + '</div><div class="c">' +
+      (online ? "Online" : "Offline") + "</div></div>";
+  }
+  function updateFriend(peerId, lat, lng, name) {
+    if (!map || !window.google) return;
+    if (friendMarkers[peerId]) {
+      friendMarkers[peerId].setPosition({ lat: lat, lng: lng });
+    } else {
+      friendMarkers[peerId] = new google.maps.Marker({
+        position: { lat: lat, lng: lng },
+        map: map,
+        title: name,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 9,
+          fillColor: "#f9ab00",
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 3
+        }
+      });
+    }
+    addFriend(peerId, name, true);
+  }
+
+  $("btnCreate").addEventListener("click", function () {
+    if (!peer || !myPeerId) { initPeer(); return toast("Connecting… try again"); }
+    $("roomCode").value = myPeerId;
+    setRoomLive(true, "Hosting room");
+    $("callBar").classList.add("show");
+    toast("Room created — copy the code");
+  });
+  $("btnJoin").addEventListener("click", function () {
+    var code = ($("roomCode").value || "").trim();
+    if (!code) return toast("Enter a room code");
+    if (!peer || !myPeerId) { initPeer(); return toast("Connecting… try again"); }
+    if (code === myPeerId) return toast("That is your own code");
+    var conn = peer.connect(code, {
+      reliable: true,
+      metadata: { name: (currentUser && currentUser.name) || "Friend" }
+    });
+    setupConn(conn);
+    setRoomLive(true, "Joining…");
+    $("callBar").classList.add("show");
+  });
+  $("btnCopyRoom").addEventListener("click", function () {
+    var code = ($("roomCode").value || "").trim() || myPeerId || "";
+    if (!code) return toast("Create or join a room first");
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(function () { toast("Code copied"); });
+    } else toast(code);
+  });
+
+  $("btnVoice").addEventListener("click", function () {
+    var peers = Object.keys(roomPeers);
+    if (!peers.length) return toast("Join a room first");
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function (stream) {
+      localStream = stream;
+      currentCall = peer.call(peers[0], localStream, { metadata: { type: "voice" } });
+      currentCall.on("stream", function (s) {
+        var a = $("remoteAudio");
+        if (a) a.srcObject = s;
+        toast("Voice connected");
+      });
+      toast("Calling…");
+    }).catch(function () { toast("Mic denied"); });
+  });
+  $("btnScreen").addEventListener("click", function () {
+    var peers = Object.keys(roomPeers);
+    if (!peers.length) return toast("Join a room first");
+    navigator.mediaDevices.getDisplayMedia({
+      video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
+    }).then(function (stream) {
+      screenStream = stream;
+      screenCall = peer.call(peers[0], screenStream, { metadata: { type: "screen" } });
+      toast("Sharing screen");
+      stream.getVideoTracks()[0].onended = function () { stopScreen(); };
+    }).catch(function () { toast("Screen share cancelled"); });
+  });
+  function stopScreen() {
+    if (screenStream) { screenStream.getTracks().forEach(function (t) { t.stop(); }); screenStream = null; }
+    if (screenCall) { try { screenCall.close(); } catch (e) {} screenCall = null; }
+    $("ssb").classList.remove("show");
+    var v = $("remoteScreen");
+    if (v) v.srcObject = null;
+  }
+  $("btnHang").addEventListener("click", function () {
+    if (currentCall) { try { currentCall.close(); } catch (e) {} currentCall = null; }
+    stopScreen();
+    if (localStream) { localStream.getTracks().forEach(function (t) { t.stop(); }); localStream = null; }
+    toast("Call ended");
+  });
+
+  function initMap() {
+    map = new google.maps.Map($("map"), {
+      center: { lat: 37.7749, lng: -122.4194 },
+      zoom: 13,
+      mapTypeId: "satellite",
+      disableDefaultUI: true,
+      zoomControl: true,
+      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+      gestureHandling: "greedy"
+    });
+    placesService = new google.maps.places.PlacesService(map);
+    autocompleteService = new google.maps.places.AutocompleteService();
+
+    map.addListener("mousemove", function (e) {
+      if (e.latLng) $("coords").textContent = e.latLng.lat().toFixed(5) + ", " + e.latLng.lng().toFixed(5);
+    });
+    map.addListener("zoom_changed", updateStatus);
+    map.addListener("center_changed", updateStatus);
+    map.addListener("click", function (e) {
+      if (dropMode && e.latLng) {
+        addMarker(e.latLng.lat(), e.latLng.lng(), "Dropped Pin");
+        dropMode = false;
+        $("btnDrop").classList.remove("on");
+        toast("Pin dropped");
+      }
+    });
+
+    updateStatus();
+    loadUser();
+    loadMarkers();
+    setTimeout(initPeer, 500);
+
+    if (localStorage.getItem("maps_welcome_done") === "1" || localStorage.getItem("maps_user")) {
+      closeWelcome();
+      if (!myMarker) setTimeout(function () { requestLocation(true); }, 600);
+    }
+  }
+  window.initMap = initMap;
+
+  function updateStatus() {
+    if (!map) return;
+    var c = map.getCenter();
+    $("coords").textContent = c.lat().toFixed(5) + ", " + c.lng().toFixed(5);
+    $("zoom").textContent = "Zoom " + map.getZoom();
+  }
+
+  function addMarker(lat, lng, title) {
+    markerId += 1;
+    var id = markerId;
+    var marker = new google.maps.Marker({
+      position: { lat: lat, lng: lng },
+      map: map,
+      title: title || "Place",
+      label: { text: String(id), color: "white", fontWeight: "700", fontSize: "11px" },
+      animation: google.maps.Animation.DROP,
+      draggable: true
+    });
+    var info = new google.maps.InfoWindow({
+      content: "<div style='font-family:Inter,sans-serif;padding:3px'><strong>" + esc(title || "Place") + "</strong></div>"
+    });
+    marker.addListener("click", function () { info.open(map, marker); });
+    marker.addListener("dragend", function () {
+      var pos = marker.getPosition();
+      var m = markers.find(function (x) { return x.id === id; });
+      if (m) { m.lat = pos.lat(); m.lng = pos.lng(); renderMarkers(); persist(); }
+    });
+    markers.push({ id: id, lat: lat, lng: lng, title: title || "Place", marker: marker, info: info, isMe: false });
+    renderMarkers();
+    persist();
+    map.panTo({ lat: lat, lng: lng });
+    if (map.getZoom() < 15) map.setZoom(15);
+  }
+
+  function removeMarker(id) {
+    var idx = markers.findIndex(function (m) { return m.id === id; });
+    if (idx === -1) return;
+    markers[idx].marker.setMap(null);
+    if (markers[idx].isMe) {
+      myMarker = null;
+      if (accuracyCircle) { accuracyCircle.setMap(null); accuracyCircle = null; }
+    }
+    markers.splice(idx, 1);
+    renderMarkers();
+    persist();
+  }
+
+  function renderMarkers() {
+    var list = $("markers");
+    if (!list) return;
+    if (!markers.length) {
+      list.innerHTML = '<div class="es">Search or drop a pin</div>';
+      return;
+    }
+    list.innerHTML = markers.map(function (m) {
+      return '<div class="mc" data-id="' + m.id + '">' +
+        '<div class="mp' + (m.isMe ? " me" : "") + '">' + (m.isMe ? "*" : m.id) + "</div>" +
+        '<div class="mi"><div class="t">' + esc(m.title) + '</div>' +
+        '<div class="c">' + m.lat.toFixed(5) + ", " + m.lng.toFixed(5) + "</div></div>" +
+        (m.isMe || m.friendId ? "" : '<button data-rm="' + m.id + '" type="button" style="margin-left:auto;background:transparent;border:none;color:#f28b82;cursor:pointer;font-size:16px">×</button>') +
+        "</div>";
+    }).join("");
+    list.querySelectorAll(".mc").forEach(function (card) {
+      card.addEventListener("click", function (e) {
+        if (e.target.getAttribute("data-rm")) return;
+        var m = markers.find(function (x) { return x.id === +card.getAttribute("data-id"); });
+        if (m) {
+          map.panTo({ lat: m.lat, lng: m.lng });
+          map.setZoom(16);
+          if (m.info) m.info.open(map, m.marker);
+        }
+      });
+    });
+    list.querySelectorAll("[data-rm]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        removeMarker(+btn.getAttribute("data-rm"));
+      });
+    });
+  }
+
+  function persist() {
+    var data = markers.filter(function (m) { return !m.isMe && !m.friendId; }).map(function (m) {
+      return { id: m.id, lat: m.lat, lng: m.lng, title: m.title };
+    });
+    try {
+      localStorage.setItem("maps_markers", JSON.stringify(data));
+      localStorage.setItem("maps_marker_id", String(markerId));
+    } catch (e) {}
+  }
+  function loadMarkers() {
+    try {
+      var sid = localStorage.getItem("maps_marker_id");
+      if (sid) markerId = parseInt(sid, 10) || 0;
+      var raw = localStorage.getItem("maps_markers");
+      if (!raw) return;
+      JSON.parse(raw).forEach(function (m) {
+        var marker = new google.maps.Marker({
+          position: { lat: m.lat, lng: m.lng },
+          map: map,
+          title: m.title,
+          label: { text: String(m.id), color: "white", fontWeight: "700", fontSize: "11px" },
+          draggable: true
+        });
+        var info = new google.maps.InfoWindow({
+          content: "<div style='font-family:Inter,sans-serif;padding:3px'><strong>" + esc(m.title) + "</strong></div>"
+        });
+        marker.addListener("click", function () { info.open(map, marker); });
+        markers.push({ id: m.id, lat: m.lat, lng: m.lng, title: m.title, marker: marker, info: info, isMe: false });
+      });
+      renderMarkers();
+    } catch (e) {}
+  }
+
+  function searchPlaces(query) {
+    var results = $("results");
+    if (!query || query.length < 2) {
+      results.classList.remove("open");
+      return;
+    }
+    if (!autocompleteService) return;
+    autocompleteService.getPlacePredictions(
+      { input: query, types: ["geocode", "establishment"] },
+      function (preds, status) {
+        if (status !== google.maps.places.PlacesServiceStatus.OK || !preds) {
+          results.innerHTML = '<div class="ri"><div class="nm">No results</div></div>';
+          results.classList.add("open");
+          return;
+        }
+        results.innerHTML = preds.slice(0, 6).map(function (p) {
+          return '<div class="ri" data-pid="' + p.place_id + '">' +
+            '<div class="nm">' + esc(p.structured_formatting.main_text) + "</div>" +
+            '<div class="ad">' + esc(p.description) + "</div></div>";
+        }).join("");
+        results.classList.add("open");
+        results.querySelectorAll(".ri").forEach(function (el) {
+          el.addEventListener("click", function () {
+            placesService.getDetails(
+              { placeId: el.getAttribute("data-pid"), fields: ["geometry", "name"] },
+              function (place, st) {
+                if (st === google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+                  addMarker(place.geometry.location.lat(), place.geometry.location.lng(), place.name || "Place");
+                  results.classList.remove("open");
+                  $("q").value = place.name || "";
+                }
+              }
+            );
+          });
+        });
+      }
+    );
+  }
+
+  $("q").addEventListener("input", function () {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(function () { searchPlaces($("q").value.trim()); }, 280);
+  });
+  $("q").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); searchPlaces($("q").value.trim()); }
+  });
+  $("qBtn").addEventListener("click", function () { searchPlaces($("q").value.trim()); });
+
+  $("btnLocate").addEventListener("click", function () { requestLocation(true); });
+  $("btnDrop").addEventListener("click", function () {
+    dropMode = !dropMode;
+    $("btnDrop").classList.toggle("on", dropMode);
+    toast(dropMode ? "Click map to drop pin" : "Drop mode off");
+  });
+  $("btnClear").addEventListener("click", function () {
+    markers.forEach(function (m) { if (!m.friendId) m.marker.setMap(null); });
+    markers = markers.filter(function (m) { return m.friendId; });
+    myMarker = null;
+    if (accuracyCircle) { accuracyCircle.setMap(null); accuracyCircle = null; }
+    renderMarkers();
+    persist();
+    toast("Places cleared");
+  });
+  $("btnCopy").addEventListener("click", function () {
+    if (!map) return;
+    var c = map.getCenter();
+    var text = c.lat().toFixed(6) + ", " + c.lng().toFixed(6);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(function () { toast("Copied"); });
+    } else toast(text);
+  });
+  $("btnLayers").addEventListener("click", function (e) {
+    e.stopPropagation();
+    $("layers").classList.toggle("open");
+  });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("#layers") && !e.target.closest("#btnLayers")) {
+      $("layers").classList.remove("open");
+    }
+  });
+  document.querySelectorAll(".lo").forEach(function (el) {
+    el.addEventListener("click", function () {
+      if (map) map.setMapTypeId(el.getAttribute("data-layer"));
+      document.querySelectorAll(".lo").forEach(function (x) { x.classList.remove("on"); });
+      el.classList.add("on");
+      $("layers").classList.remove("open");
+    });
+  });
+  $("btnFull").addEventListener("click", function () {
+    if (!document.fullscreenElement) {
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  });
+  $("menuBtn").addEventListener("click", function () {
+    $("sidebar").classList.toggle("open");
+  });
+})();
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQXAhnouB23QWGRAchHsdg9XcVDn-fdUg&libraries=places&callback=initMap&loading=async" async defer></script>
 </body>
 </html>
